@@ -104,13 +104,6 @@ export default class UserService {
 		return details;
 	}
 
-	public get walletBalance() {
-		return this._account.walletBalance;
-	}
-
-	public get markupPrice() {
-		return this._account.markupPrice;
-	}
 
 	static async register(
 		email: string,
@@ -193,21 +186,6 @@ export default class UserService {
 		return this._account;
 	}
 
-	public async setMarkupPrice(rate: number) {
-		if (rate < 0) {
-			throw new CustomError(COMMON_ERRORS.INVALID_FIELDS);
-		}
-		await AccountDB.updateOne(
-			{
-				_id: this._user_id,
-			},
-			{
-				$set: {
-					markupPrice: rate,
-				},
-			}
-		);
-	}
 
 	public async getUsers() {
 		if (this._level !== UserLevel.Master) {

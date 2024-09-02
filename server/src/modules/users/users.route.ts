@@ -6,11 +6,6 @@ import { CreateAgentValidator } from './users.validator';
 
 const router = express.Router();
 
-router
-	.route('/admins/:id/markup-price')
-	.all(VerifyMinLevel(UserLevel.Master), IDValidator)
-	.post(Controller.setMarkupPrice);
-
 router.route('/admins').all(VerifyMinLevel(UserLevel.Master)).get(Controller.getAdmins);
 
 router.route('/agents/:id/tasks').all(IDValidator).get(Controller.getAssignedTask);

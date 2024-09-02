@@ -27,7 +27,6 @@ export enum Cookie {
 export enum UserLevel {
 	Agent = 10,
 	Admin = 20,
-	WhiteLabel = 30,
 	Master = 100,
 }
 

@@ -18,7 +18,7 @@ router.route('/details').all(VerifySession).get(Controller.details).post(UpdateA
 
 router
 	.route('/service-account/:id')
-	.all(VerifySession, VerifyMinLevel(UserLevel.Admin), IDValidator)
+	.all(VerifySession, VerifyMinLevel(UserLevel.Agent), IDValidator)
 	.post(Controller.serviceAccount);
 
 router.route('/login').all(LoginAccountValidator).post(Controller.login);
