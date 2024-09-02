@@ -22,22 +22,6 @@ async function getAdmins(req: Request, res: Response, next: NextFunction) {
 	}
 }
 
-async function setMarkupPrice(req: Request, res: Response, next: NextFunction) {
-	const rate = Number(req.body.rate) as number;
-
-	try {
-		const userService = await UserService.findById(req.locals.id);
-		await userService.setMarkupPrice(rate);
-		return Respond({
-			res,
-			status: 200,
-		});
-	} catch (err) {
-		if (err instanceof CustomError) return next(err);
-		return next(new CustomError(COMMON_ERRORS.INTERNAL_SERVER_ERROR));
-	}
-}
-
 async function createAgent(req: Request, res: Response, next: NextFunction) {
 	const { email, name, phone, password } = req.locals.data as CreateAgentValidationResult;
 	try {
@@ -193,7 +177,6 @@ async function getAssignedTask(req: Request, res: Response, next: NextFunction) 
 
 const Controller = {
 	getAdmins,
-	setMarkupPrice,
 	getAgents,
 	createAgent,
 	updateAgent,

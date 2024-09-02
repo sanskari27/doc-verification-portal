@@ -36,7 +36,7 @@ export default function (app: Express) {
 	let basedir = __dirname;
 	basedir = basedir.slice(0, basedir.lastIndexOf(IS_WINDOWS ? '\\' : '/'));
 	if (IS_PRODUCTION) {
-		basedir = basedir.slice(0, basedir.lastIndexOf(IS_WINDOWS ? '\\' : '/'));
+		basedir = basedir.slice(0, basedir.lastIndexOf('/'));
 	}
 	global.__basedir = basedir;
 

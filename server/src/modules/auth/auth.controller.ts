@@ -140,6 +140,7 @@ async function resetPassword(req: Request, res: Response, next: NextFunction) {
 	}
 }
 
+//TODO
 async function register(req: Request, res: Response, next: NextFunction) {
 	const { email, name, phone, password } = req.locals.data as RegisterValidationResult;
 	try {
