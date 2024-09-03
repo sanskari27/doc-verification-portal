@@ -1,7 +1,7 @@
-import { SessionDB } from '../../mongo';
-import ISession from '../../mongo/types/session';
-import { CustomError, ERRORS } from '../errors';
-import { IDType } from '../types';
+import { SessionDB } from '../../../mongo';
+import ISession from '../../../mongo/types/session';
+import { CustomError, ERRORS } from '../../errors';
+import { IDType } from '../../types';
 
 type SessionDetails = {
 	ipAddress?: string;

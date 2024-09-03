@@ -5,7 +5,7 @@ import { Cookie, REFRESH_SECRET, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
 import COMMON_ERRORS from '../../errors/common-errors';
 import { sendPasswordResetEmail } from '../../provider/email';
-import { UserService } from '../../services';
+import { AccountService } from '../../services';
 import { clearCookie, Respond, setCookie } from '../../utils/ExpressUtils';
 import {
 	LoginValidationResult,
@@ -21,7 +21,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
 	const { email, password, latitude, longitude } = req.locals.data as LoginValidationResult;
 
 	try {
-		const { authToken, refreshToken, userService } = await UserService.login(email, password, {
+		const { authToken, refreshToken, userService } = await AccountService.login(email, password, {
 			latitude: latitude ?? 0,
 			longitude: longitude ?? 0,
 			platform: req.useragent?.platform || '',
@@ -73,7 +73,7 @@ async function serviceAccount(req: Request, res: Response, next: NextFunction) {
 			}
 		}
 
-		const details = await UserService.loginById(id);
+		const details = await AccountService.loginById(id);
 		authToken = details.authToken;
 		refreshToken = details.refreshToken;
 	} catch (err) {
@@ -106,7 +106,7 @@ async function forgotPassword(req: Request, res: Response, next: NextFunction) {
 	const { email, callbackURL } = req.locals.data as ResetPasswordValidationResult;
 
 	try {
-		const token = await UserService.generatePasswordResetLink(email);
+		const token = await AccountService.generatePasswordResetLink(email);
 
 		const resetLink = `${callbackURL}?code=${token}`;
 		const success = await sendPasswordResetEmail(email, resetLink);
@@ -129,7 +129,7 @@ async function resetPassword(req: Request, res: Response, next: NextFunction) {
 			return res.send('Error resetting password');
 		}
 
-		await UserService.saveResetPassword(req.params.id, password);
+		await AccountService.saveResetPassword(req.params.id, password);
 
 		return Respond({
 			res,
@@ -144,13 +144,13 @@ async function resetPassword(req: Request, res: Response, next: NextFunction) {
 async function register(req: Request, res: Response, next: NextFunction) {
 	const { email, name, phone, password } = req.locals.data as RegisterValidationResult;
 	try {
-		await UserService.register(email, password, {
+		await AccountService.register(email, password, {
 			name,
 			phone,
 			level: UserLevel.Master,
 		});
 
-		const { authToken, refreshToken, userService } = await UserService.login(email, password, {
+		const { authToken, refreshToken, userService } = await AccountService.login(email, password, {
 			platform: req.useragent?.platform || '',
 			browser: req.useragent?.browser || '',
 		});
@@ -228,7 +228,7 @@ async function logout(req: Request, res: Response, next: NextFunction) {
 	try {
 		const _refresh_id = req.cookies[Cookie.Refresh];
 		const decoded = verify(_refresh_id, REFRESH_SECRET) as JwtPayload;
-		UserService.markLogout(decoded.id);
+		AccountService.markLogout(decoded.id);
 	} catch (err) {
 		//ignored
 	}

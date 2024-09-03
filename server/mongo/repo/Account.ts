@@ -1,6 +1,5 @@
 import { randomBytes, scrypt } from 'crypto';
 import mongoose from 'mongoose';
-import { UserLevel } from '../../src/config/const';
 import IAccount from '../types/account';
 
 export const AccountDB_name = 'Account';
@@ -27,7 +26,7 @@ const schema = new mongoose.Schema<IAccount>({
 	},
 	userLevel: {
 		type: Number,
-		default: UserLevel.Admin,
+		required: true,
 	},
 });
 

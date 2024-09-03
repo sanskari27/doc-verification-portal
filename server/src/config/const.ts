@@ -18,15 +18,15 @@ export const RESEND_API_KEY = process.env.RESEND_API_KEY ?? '';
 
 export const LOGO_PATH = '/static/assets/logo-primary.svg';
 
-
 export enum Cookie {
 	Auth = 'auth-cookie',
 	Refresh = 'refresh-cookie',
 	Device = 'device-cookie',
 }
 export enum UserLevel {
-	Agent = 10,
-	Admin = 20,
+	DummyAgent = 10,
+	Agent = 20,
+	Admin = 50,
 	Master = 100,
 }
 
@@ -34,7 +34,6 @@ export enum Path {
 	Misc = '/static/misc/',
 	Media = '/static/media/',
 }
-
 
 export const CACHE_TIMEOUT = 60 * 60; //seconds
 export const REFRESH_CACHE_TIMEOUT = 30 * 24 * 60 * 60; //seconds

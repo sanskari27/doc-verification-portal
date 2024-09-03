@@ -1,14 +1,13 @@
 import { randomBytes } from 'crypto';
 import { Types } from 'mongoose';
-import { AccountDB, SessionDB, StorageDB } from '../../mongo';
-import IAccount from '../../mongo/types/account';
-import { UserLevel } from '../config/const';
-import { AUTH_ERRORS, CustomError } from '../errors';
-import COMMON_ERRORS from '../errors/common-errors';
-import { sendLoginCredentialsEmail } from '../provider/email';
-import { IDType } from '../types';
-import DateUtils from '../utils/DateUtils';
-import { filterUndefinedKeys } from '../utils/ExpressUtils';
+import { AccountDB, SessionDB, StorageDB } from '../../../mongo';
+import IAccount from '../../../mongo/types/account';
+import { UserLevel } from '../../config/const';
+import { AUTH_ERRORS, CustomError } from '../../errors';
+import { sendLoginCredentialsEmail } from '../../provider/email';
+import { IDType } from '../../types';
+import DateUtils from '../../utils/DateUtils';
+import { filterUndefinedKeys } from '../../utils/ExpressUtils';
 import SessionService from './session';
 
 type SessionDetails = {
@@ -19,7 +18,7 @@ type SessionDetails = {
 	longitude?: number;
 };
 
-export default class UserService {
+export default class AccountService {
 	private _user_id: IDType;
 	private _level: UserLevel;
 	private _account: IAccount;
@@ -36,7 +35,7 @@ export default class UserService {
 			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
 		}
 
-		return new UserService(account);
+		return new AccountService(account);
 	}
 
 	static async login(email: string, password: string, opts: SessionDetails) {
@@ -55,7 +54,7 @@ export default class UserService {
 		return {
 			authToken: session.authToken,
 			refreshToken: session.refreshToken,
-			userService: new UserService(user),
+			userService: new AccountService(user),
 		};
 	}
 
@@ -70,7 +69,7 @@ export default class UserService {
 		return {
 			authToken: session.authToken,
 			refreshToken: session.refreshToken,
-			userService: new UserService(user),
+			AccountService: new AccountService(user),
 		};
 	}
 
@@ -96,14 +95,20 @@ export default class UserService {
 
 	async getDetails() {
 		const details = {
+			id: this._user_id,
 			name: this._account.name,
 			email: this._account.email,
 			phone: this._account.phone,
+			userLevel: this._account.userLevel,
+			parent_id: this._account.parent,
 		};
 
 		return details;
 	}
 
+	isOwner() {
+		return this._level === UserLevel.Master;
+	}
 
 	static async register(
 		email: string,
@@ -112,7 +117,7 @@ export default class UserService {
 			name?: string;
 			phone?: string;
 			level: UserLevel;
-			linked_to?: Types.ObjectId;
+			parent?: Types.ObjectId;
 		}
 	) {
 		try {
@@ -122,7 +127,7 @@ export default class UserService {
 				name: opts.name,
 				phone: opts.phone,
 				userLevel: opts.level,
-				parent: opts.linked_to,
+				parent: opts.parent,
 			});
 
 			sendLoginCredentialsEmail(email, email, password);
@@ -184,111 +189,5 @@ export default class UserService {
 
 	public get account() {
 		return this._account;
-	}
-
-
-	public async getUsers() {
-		if (this._level !== UserLevel.Master) {
-			throw new CustomError(AUTH_ERRORS.PERMISSION_DENIED);
-		}
-
-		const users = await AccountDB.aggregate([
-			{
-				$match: {
-					userLevel: {
-						$gte: UserLevel.Admin,
-					},
-				},
-			},
-		]);
-
-		return users.map((user) => {
-			return {
-				id: user._id,
-				name: user.name ?? '',
-				email: user.email ?? '',
-				phone: user.phone ?? '',
-			};
-		});
-	}
-
-	public async getAgents() {
-		const users = await AccountDB.aggregate([
-			{
-				$match: {
-					userLevel: UserLevel.Agent,
-					parent: this._user_id,
-				},
-			},
-		]);
-
-		return users.map((user) => {
-			return {
-				id: user._id,
-				name: user.name ?? '',
-				email: user.email ?? '',
-				phone: user.phone ?? '',
-			};
-		});
-	}
-
-	public async getAgent(id: Types.ObjectId) {
-		const agent = await AccountDB.findOne({
-			_id: id,
-			parent: this._user_id,
-		});
-
-		if (!agent) {
-			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
-		}
-
-		return agent;
-	}
-
-	async updateAgentDetails(
-		id: Types.ObjectId,
-		opts: { name?: string; email?: string; phone?: string }
-	) {
-		const update: any = filterUndefinedKeys(opts);
-
-		await AccountDB.updateOne(
-			{
-				_id: id,
-				parent: this._user_id,
-			},
-			update
-		);
-
-		const user = await AccountDB.findOne({
-			_id: id,
-			parent: this._user_id,
-		});
-
-		if (!user) {
-			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
-		}
-
-		return {
-			name: user.name ?? '',
-			email: user.email ?? '',
-			phone: user.phone ?? '',
-		};
-	}
-
-	async updateAgentPassword(id: Types.ObjectId, password: string) {
-		const user = await AccountDB.findOne({ _id: id }).select('+password');
-		if (user === null) {
-			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
-		}
-
-		user.password = password;
-		await user.save();
-	}
-
-	async removeAgent(id: Types.ObjectId) {
-		await AccountDB.deleteOne({
-			_id: id,
-			parent: this._user_id,
-		});
 	}
 }

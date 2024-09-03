@@ -2,7 +2,7 @@
 
 import { Types } from 'mongoose';
 import IAccount from '../../mongo/types/account';
-import { UserService } from '../services';
+import { AccountService } from '../services';
 
 declare global {
 	var __basedir: string;
@@ -26,8 +26,8 @@ export interface LocalVariables {
 	id: IDType;
 	agent_id: IDType;
 	serviceAccount: IAccount;
-	serviceUser: UserService;
-	user: UserService;
+	serviceUser: AccountService;
+	user: AccountService;
 }
 
 export { default as ServerError } from './serverError';

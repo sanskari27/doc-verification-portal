@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { z } from 'zod';
+import { UserLevel } from '../../config/const';
 import { CustomError } from '../../errors';
 import { idSchema } from '../../utils/schema';
 
@@ -20,6 +21,7 @@ export type CreateAgentValidationResult = {
 	password: string;
 	name: string;
 	phone: string;
+	level: UserLevel;
 };
 
 export type PasswordValidationResult = {
@@ -55,6 +57,13 @@ export async function CreateAgentValidator(req: Request, res: Response, next: Ne
 		phone: z.string().trim(),
 		email: z.string().trim().email(),
 		password: z.string().trim().min(6),
+		level: z
+			.number()
+			.int()
+			.refine(
+				(value) =>
+					value === UserLevel.Agent || value === UserLevel.Admin || value === UserLevel.Master
+			),
 	});
 
 	const reqValidatorResult = reqValidator.safeParse(req.body);

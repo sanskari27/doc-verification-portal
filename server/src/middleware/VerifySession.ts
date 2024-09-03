@@ -9,7 +9,7 @@ import {
 } from '../config/const';
 import { CustomError } from '../errors';
 import AUTH_ERRORS from '../errors/auth-errors';
-import { SessionService, UserService } from '../services';
+import { AccountService, SessionService } from '../services';
 import { setCookie } from '../utils/ExpressUtils';
 
 export default async function VerifySession(req: Request, res: Response, next: NextFunction) {
@@ -20,13 +20,13 @@ export default async function VerifySession(req: Request, res: Response, next: N
 			const decoded = verify(_auth_id, JWT_SECRET) as JwtPayload;
 			const session = await SessionService.findSessionById(decoded.id);
 
-			req.locals.user = await UserService.findById(session.userId);
+			req.locals.user = await AccountService.findById(session.userId);
 			if (req.locals.user.userLevel >= UserLevel.Admin) {
 				req.locals.serviceUser = req.locals.user;
 				req.locals.serviceAccount = req.locals.serviceUser.account;
 			} else if (req.locals.user.userLevel === UserLevel.Agent) {
 				const parent = req.locals.user.account.parent;
-				req.locals.serviceUser = await UserService.findById(parent!);
+				req.locals.serviceUser = await AccountService.findById(parent!);
 				req.locals.serviceAccount = req.locals.serviceUser.account;
 			}
 
@@ -48,13 +48,13 @@ export default async function VerifySession(req: Request, res: Response, next: N
 			const decoded = verify(_refresh_id, REFRESH_SECRET) as JwtPayload;
 			const session = await SessionService.findSessionByRefreshToken(decoded.id);
 
-			req.locals.user = await UserService.findById(session.userId);
+			req.locals.user = await AccountService.findById(session.userId);
 			if (req.locals.user.userLevel >= UserLevel.Admin) {
 				req.locals.serviceUser = req.locals.user;
 				req.locals.serviceAccount = req.locals.serviceUser.account;
 			} else if (req.locals.user.userLevel === UserLevel.Agent) {
 				const parent = req.locals.user.account.parent;
-				req.locals.serviceUser = await UserService.findById(parent!);
+				req.locals.serviceUser = await AccountService.findById(parent!);
 				req.locals.serviceAccount = req.locals.serviceUser.account;
 			}
 
