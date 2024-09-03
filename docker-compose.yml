@@ -1,28 +1,15 @@
 version: '3.8'
 
 services:
-  mongo:
-    image: mongo:latest
-    container_name: mongo
-    ports:
-      - "27017:27017"
-    command: mongod --quiet
-    volumes:
-      - ./data:/data/db
-    networks:
-      - app-network
-
   node-app:
     build:
       context: ./server/
       dockerfile: Dockerfile
     container_name: node-app
     ports:
-      - "7896:7896"  # Adjust if your app uses a different port
+      - '7896:7896' # Adjust if your app uses a different port
     environment:
-      DATABASE_URL: mongodb://mongo:27017/mydatabase
-    depends_on:
-      - mongo
+      DATABASE_URL: mongodb+srv://sanskari274:ScsO5NlIuWWrNlc5@free-cluster.d4mobwi.mongodb.net/doc-verification-portal
     networks:
       - app-network
 
