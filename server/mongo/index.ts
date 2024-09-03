@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-export { AccountDB, SessionDB, StorageDB } from './repo';
+export { AccountDB, EmployeeDB, SessionDB, StorageDB } from './repo';
 
 export default function connectDB(database_url: string) {
 	return new Promise((resolve, reject) => {

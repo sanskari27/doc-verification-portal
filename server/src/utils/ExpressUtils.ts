@@ -59,21 +59,19 @@ export const setCookie = (
 	{ key, expires, value }: { key: string; value: string; expires: number }
 ) => {
 	res.cookie(key, value, {
-		sameSite: 'none',
+		sameSite: 'strict',
 		expires: new Date(Date.now() + expires),
 		httpOnly: IS_PRODUCTION,
-		secure: true,
-		domain: IS_PRODUCTION ? '.wautopilot.com' : 'localhost',
+		secure: IS_PRODUCTION,
 	});
 };
 
 export const clearCookie = (res: Response, key: string) => {
 	res.clearCookie(key, {
-		sameSite: 'none',
+		sameSite: 'strict',
 		expires: new Date(),
 		httpOnly: IS_PRODUCTION,
-		secure: true,
-		domain: IS_PRODUCTION ? '.wautopilot.com' : 'localhost',
+		secure: IS_PRODUCTION,
 	});
 };
 
