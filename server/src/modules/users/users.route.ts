@@ -1,6 +1,6 @@
 import express from 'express';
 import { UserLevel } from '../../config/const';
-import { VerifyMinLevel } from '../../middleware';
+import { IDValidator, VerifyMinLevel } from '../../middleware';
 import Controller from './users.controller';
 import { CreateUserValidator } from './users.validator';
 
@@ -10,6 +10,10 @@ router
 	.route('/admins')
 	.get(VerifyMinLevel(UserLevel.Master), Controller.listAdmins)
 	.post(VerifyMinLevel(UserLevel.Master), CreateUserValidator, Controller.addAdmin);
+
+router
+	.route('/agents/:id')
+	.post(IDValidator, VerifyMinLevel(UserLevel.Admin), Controller.removeAgent);
 
 router
 	.route('/agents')
