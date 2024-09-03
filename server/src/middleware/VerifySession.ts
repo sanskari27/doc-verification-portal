@@ -1,75 +1,45 @@
 import { NextFunction, Request, Response } from 'express';
 import { JwtPayload, verify } from 'jsonwebtoken';
-import {
-	Cookie,
-	JWT_SECRET,
-	REFRESH_SECRET,
-	SESSION_EXPIRE_TIME,
-	UserLevel,
-} from '../config/const';
+import { Cookie, JWT_SECRET, REFRESH_SECRET, SESSION_EXPIRE_TIME } from '../config/const';
 import { CustomError } from '../errors';
 import AUTH_ERRORS from '../errors/auth-errors';
 import { AccountService, SessionService } from '../services';
+import userServiceFactory from '../services/user/userServiceFactory';
 import { setCookie } from '../utils/ExpressUtils';
 
 export default async function VerifySession(req: Request, res: Response, next: NextFunction) {
 	const _auth_id = req.cookies[Cookie.Auth];
+	const _refresh_id = req.cookies[Cookie.Refresh];
+
+	let session;
 
 	if (_auth_id) {
 		try {
 			const decoded = verify(_auth_id, JWT_SECRET) as JwtPayload;
-			const session = await SessionService.findSessionById(decoded.id);
-
-			req.locals.user = await AccountService.findById(session.userId);
-			if (req.locals.user.userLevel >= UserLevel.Admin) {
-				req.locals.serviceUser = req.locals.user;
-				req.locals.serviceAccount = req.locals.serviceUser.account;
-			} else if (req.locals.user.userLevel === UserLevel.Agent) {
-				const parent = req.locals.user.account.parent;
-				req.locals.serviceUser = await AccountService.findById(parent!);
-				req.locals.serviceAccount = req.locals.serviceUser.account;
-			}
-
-			setCookie(res, {
-				key: Cookie.Auth,
-				value: session.authToken,
-				expires: SESSION_EXPIRE_TIME,
-			});
-			return next();
-		} catch (err) {
-			//ignored
+			session = await SessionService.findSessionById(decoded.id);
+		} catch (err) {}
+		if (!session && _refresh_id) {
+			try {
+				const decoded = verify(_refresh_id, REFRESH_SECRET) as JwtPayload;
+				session = await SessionService.findSessionByRefreshToken(decoded.id);
+				return next();
+			} catch (err) {}
 		}
 	}
 
-	const _refresh_id = req.cookies[Cookie.Refresh];
-
-	if (_refresh_id) {
-		try {
-			const decoded = verify(_refresh_id, REFRESH_SECRET) as JwtPayload;
-			const session = await SessionService.findSessionByRefreshToken(decoded.id);
-
-			req.locals.user = await AccountService.findById(session.userId);
-			if (req.locals.user.userLevel >= UserLevel.Admin) {
-				req.locals.serviceUser = req.locals.user;
-				req.locals.serviceAccount = req.locals.serviceUser.account;
-			} else if (req.locals.user.userLevel === UserLevel.Agent) {
-				const parent = req.locals.user.account.parent;
-				req.locals.serviceUser = await AccountService.findById(parent!);
-				req.locals.serviceAccount = req.locals.serviceUser.account;
-			}
-
-			setCookie(res, {
-				key: Cookie.Auth,
-				value: session.authToken,
-				expires: SESSION_EXPIRE_TIME,
-			});
-			return next();
-		} catch (err) {
-			//ignored
-		}
+	if (!session) {
+		return next(new CustomError(AUTH_ERRORS.SESSION_INVALIDATED));
 	}
 
-	return next(new CustomError(AUTH_ERRORS.SESSION_INVALIDATED));
+	const accountService = await AccountService.findById(session.userId);
+	req.locals.user = userServiceFactory(accountService.account);
+
+	setCookie(res, {
+		key: Cookie.Auth,
+		value: session.authToken,
+		expires: SESSION_EXPIRE_TIME,
+	});
+	return next();
 }
 
 export function VerifyMinLevel(level: number) {
