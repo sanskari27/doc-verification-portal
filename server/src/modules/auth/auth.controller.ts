@@ -147,7 +147,7 @@ async function register(req: Request, res: Response, next: NextFunction) {
 		await UserService.register(email, password, {
 			name,
 			phone,
-			level: UserLevel.Admin,
+			level: UserLevel.Master,
 		});
 
 		const { authToken, refreshToken, userService } = await UserService.login(email, password, {
