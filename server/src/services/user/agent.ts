@@ -49,7 +49,7 @@ export default class AgentService extends AccountService {
 			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
 		}
 
-		AccountDB.deleteOne({ _id: agentId });
+		AccountDB.updateOne({ _id: agentId }, { disabled: true });
 
 		const deleted = [agentId];
 
@@ -59,7 +59,7 @@ export default class AgentService extends AccountService {
 			const sub_agents = await AccountDB.find({ parent: current });
 			deleted.push(...sub_agents.map((child) => child._id));
 			queue.push(...sub_agents.map((child) => child._id));
-			AccountDB.deleteMany({ parent: current });
+			AccountDB.updateMany({ parent: current }, { disabled: true });
 		}
 
 		//TODO delete all the tasks of the deleted agents
@@ -69,6 +69,7 @@ export default class AgentService extends AccountService {
 		const admins = await AccountDB.find({
 			userLevel: UserLevel.Agent,
 			parent: parent,
+			disabled: false,
 		});
 
 		return admins.map((admin) => ({

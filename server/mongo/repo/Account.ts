@@ -28,6 +28,10 @@ const schema = new mongoose.Schema<IAccount>({
 		type: Number,
 		required: true,
 	},
+	disabled: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 schema.pre('save', async function (next) {

@@ -39,7 +39,7 @@ export default class AccountService {
 	}
 
 	static async login(email: string, password: string, opts: SessionDetails) {
-		const user = await AccountDB.findOne({ email }).select('+password');
+		const user = await AccountDB.findOne({ email, disabled: false }).select('+password');
 		if (user === null) {
 			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
 		}
