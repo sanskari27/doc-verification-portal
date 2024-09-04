@@ -37,6 +37,7 @@ export default class AdminService extends AccountService {
 		const admins = await AccountDB.find({
 			userLevel: UserLevel.Admin,
 			parent: parent,
+			disabled: false,
 		});
 
 		return admins.map((admin) => ({
