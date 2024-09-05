@@ -1,19 +1,25 @@
 import { Document } from 'mongoose';
 
-export interface IResidenceVerificationForm extends Document {
+export interface IBusinessVerificationForm extends Document {
     applicationNo: string;
     dateOfApplication: Date;
     applicantName: string;
     applicantSalutation: string;
     coApplicantName: string;
     coApplicantSalutation: string;
-    residenceAddress: string;
-    telephoneNumber: string;
+    officeAddress: string;
     addressConfirmed: boolean;
     dateOfVisit: Date;
+    timeOfVisit: string;
+
     personContacted: string;
     relationWithApplicant: string;
-    applicantDOB: Date;
+    telephoneNumber: string;
+    designationOfPersonContacted: string;
+    mobileNumber: string;
+    extensionNumber: string;
+    noOfYearPresentBusiness: string;
+
     noOfYearsAtCurrentResidence: string;
     educationalQualification: string;
     residentialStatus: IResidentialStatus;
