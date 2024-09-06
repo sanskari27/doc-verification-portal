@@ -14,6 +14,7 @@ export interface ITask extends Document {
 	description: string;
 
 	verificationType: 'business' | 'non-business' | 'nri';
+	applicantName: string;
 	verificationFormId: Types.ObjectId;
 	teleVerificationId: Types.ObjectId;
 	residenceVerificationId: Types.ObjectId;

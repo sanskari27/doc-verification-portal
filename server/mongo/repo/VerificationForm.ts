@@ -23,12 +23,15 @@ export const ContactedPersonSchema = new mongoose.Schema<ContactedPerson>(
 	{ _id: false }
 );
 
-const ResidenceFormSchema = new mongoose.Schema<IVerificationForm>({
+const VerificationFormSchema = new mongoose.Schema<IVerificationForm>({
 	applicantName: {
 		type: String,
 		required: true,
 	},
-
+	coApplicantName: {
+		type: String,
+		default: '',
+	},
 	dateOfApplication: Date,
 	residence: {
 		type: String,
@@ -50,4 +53,4 @@ const ResidenceFormSchema = new mongoose.Schema<IVerificationForm>({
 
 export const VerificationFormDB_name = 'VerificationForm';
 
-export default mongoose.model<IVerificationForm>(VerificationFormDB_name, ResidenceFormSchema);
+export default mongoose.model<IVerificationForm>(VerificationFormDB_name, VerificationFormSchema);

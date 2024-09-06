@@ -2,6 +2,7 @@ import { Document } from 'mongoose';
 
 export interface IVerificationForm extends Document {
 	applicationNo: string;
+	coApplicantName: string;
 	dateOfApplication: Date;
 	applicantName: string;
 	residence: string;
