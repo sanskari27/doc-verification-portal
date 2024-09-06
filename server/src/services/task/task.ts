@@ -1,7 +1,10 @@
 import { Types } from 'mongoose';
 import { TaskDB } from '../../../mongo';
+import VerificationForm from '../../../mongo/repo/VerificationForm';
+import { IVerificationForm } from '../../../mongo/types/verificationForm';
 import { UserLevel } from '../../config/const';
 import { CustomError, ERRORS } from '../../errors';
+import { filterUndefinedKeys } from '../../utils/ExpressUtils';
 import AccountService from '../auth/account';
 
 export default class TaskService {
@@ -27,13 +30,19 @@ export default class TaskService {
 		const task = await TaskDB.create({
 			...details,
 			assignedBy: this._account.userId,
-			agentsInvolved: [this._account.userId],
+			agentsInvolved: [this._account.userId, details.assignedTo],
 		});
 
 		return task._id;
 	}
 
-	// public async updateVerificationForm(taskId: Types.ObjectId, verificationForm: IVerificationForm) {
-	// 	// const verificationFormId =
-	// }
+	public async updateVerificationForm(
+		taskId: Types.ObjectId,
+		verificationForm: Partial<IVerificationForm>
+	) {
+		const { task_id: _, ...data } = verificationForm;
+		const verificationFormData = filterUndefinedKeys(data);
+		const updated = await VerificationForm.updateOne({ task_id: taskId }, verificationFormData);
+		return updated.modifiedCount > 0;
+	}
 }
