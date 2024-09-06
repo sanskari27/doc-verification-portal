@@ -4,6 +4,7 @@ import {
 	BusinessInteriors,
 	IBusinessVerificationForm,
 } from '../types/businessVerificationForm';
+import { TaskDB_name } from './Task';
 
 const BusinessDetailsSchema = new mongoose.Schema<BusinessDetails>(
 	{
@@ -26,6 +27,11 @@ const BusinessInteriorsSchema = new mongoose.Schema<BusinessInteriors>(
 );
 
 const BusinessVerificationFormSchema = new mongoose.Schema<IBusinessVerificationForm>({
+	task_id: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: TaskDB_name,
+		required: true,
+	},
 	businessDetails: BusinessDetailsSchema,
 	companyType: {
 		type: String,

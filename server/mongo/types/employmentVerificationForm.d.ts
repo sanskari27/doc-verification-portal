@@ -1,7 +1,8 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { ContactedPerson } from './verificationForm';
 
 export interface IEmploymentVerificationForm extends Document {
+	task_id: Types.ObjectId;
 	officeAddress: string;
 	addressConfirmed: boolean;
 	designation: string;
@@ -27,7 +28,7 @@ export interface IEmploymentVerificationForm extends Document {
 
 	recommended: 'Recommended' | 'Not Recommended';
 	remarks: string;
-	officeRemarks: "Positive" | "Negative";
+	officeRemarks: 'Positive' | 'Negative';
 }
 
 export interface EmploymentDetails extends ContactedPerson {

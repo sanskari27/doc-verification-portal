@@ -1,6 +1,7 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface IBankVerificationForm extends Document {
+	task_id: Types.ObjectId;
 	applicant: BankDetails;
 	coApplicant: BankDetails;
 }

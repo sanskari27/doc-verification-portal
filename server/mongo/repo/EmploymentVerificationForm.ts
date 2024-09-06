@@ -5,6 +5,7 @@ import {
 	IEmploymentVerificationForm,
 	SalaryDetails,
 } from '../types/employmentVerificationForm';
+import { TaskDB_name } from './Task';
 
 const EmploymentDetailsSchema = new mongoose.Schema<EmploymentDetails>(
 	{
@@ -44,6 +45,11 @@ const EmploymentInteriorsSchema = new mongoose.Schema<EmploymentInteriors>(
 );
 
 const EmploymentVerificationFormSchema = new mongoose.Schema<IEmploymentVerificationForm>({
+	task_id: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: TaskDB_name,
+		required: true,
+	},
 	officeAddress: {
 		type: String,
 		default: '',

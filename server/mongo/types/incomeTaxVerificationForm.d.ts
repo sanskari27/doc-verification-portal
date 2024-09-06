@@ -1,6 +1,7 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface IIncomeTaxVerificationForm extends Document {
+	task_id: Types.ObjectId;
 	panNo: string;
 	financialRecords: IncomeTaxFinancialYear[];
 }

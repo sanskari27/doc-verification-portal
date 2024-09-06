@@ -8,6 +8,7 @@ export {
 	ResidenceVerificationFormDB,
 	SessionDB,
 	StorageDB,
+	TaskDB,
 	TeleVerificationFormDB,
 	VerificationFormDB,
 } from './repo';

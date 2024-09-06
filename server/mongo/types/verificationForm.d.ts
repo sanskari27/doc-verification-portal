@@ -1,6 +1,7 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface IVerificationForm extends Document {
+	task_id: Types.ObjectId;
 	applicationNo: string;
 	coApplicantName: string;
 	dateOfApplication: Date;

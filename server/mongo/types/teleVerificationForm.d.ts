@@ -1,13 +1,14 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { ContactedPerson } from './verificationForm';
 
 export interface ITeleVerificationForm extends Document {
+	task_id: Types.ObjectId;
 	residenceContacted: ContactedPerson;
 	officeContacted: ContactedPerson;
 	businessDetails: BusinessDetails;
 
 	residenceTeleCalling: TeleCalling;
-	
+
 	guarantor: Guarantor;
 	reference1: ContactedPerson;
 	reference2: ContactedPerson;
