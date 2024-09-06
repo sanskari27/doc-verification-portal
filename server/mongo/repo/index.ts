@@ -1,4 +1,10 @@
 export { default as AccountDB } from './Account';
-export { default as EmployeeDB } from './Employee';
+export { default as BankVerificationFormDB } from './BankVerificationForm';
+export { default as BusinessVerificationFormDB } from './BusinessVerificationForm';
+export { default as EmploymentVerificationFormDB } from './EmploymentVerificationForm';
+export { default as IncomeVerificationFormDB } from './IncomeTaxVerificationForm';
+export { default as ResidenceVerificationFormDB } from './ResidenceVerificationForm';
 export { default as SessionDB } from './Session';
 export { default as StorageDB } from './Storage';
+export { default as TeleVerificationFormDB } from './TeleVerificationForm';
+export { default as VerificationFormDB } from './VerificationForm';

@@ -1,7 +1,8 @@
 import { Types } from 'mongoose';
 import { AccountDB } from '../../../mongo';
+import Task from '../../../mongo/repo/Task';
 import IAccount from '../../../mongo/types/account';
-import { UserLevel } from '../../config/const';
+import { TaskStatus, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
 import { generateText } from '../../utils/ExpressUtils';
 import AccountService from '../auth/account';
@@ -62,7 +63,7 @@ export default class AgentService extends AccountService {
 			AccountDB.updateMany({ parent: current }, { disabled: true });
 		}
 
-		//TODO delete all the tasks of the deleted agents
+		await Task.updateMany({ agentsInvolved: { $in: deleted } }, { status: TaskStatus.Paused });
 	}
 
 	static async listAgents({ parent }: { parent: Types.ObjectId }) {

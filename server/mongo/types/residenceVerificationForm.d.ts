@@ -1,99 +1,90 @@
 import { Document } from 'mongoose';
 
 export interface IResidenceVerificationForm extends Document {
-    applicationNo: string;
-    dateOfApplication: Date;
-    applicantName: string;
-    applicantSalutation: string;
-    coApplicantName: string;
-    coApplicantSalutation: string;
-    residenceAddress: string;
-    telephoneNumber: string;
-    addressConfirmed: boolean;
-    dateOfVisit: Date;
-    personContacted: string;
-    relationWithApplicant: string;
-    applicantDOB: Date;
-    noOfYearsAtCurrentResidence: string;
-    educationalQualification: string;
-    residentialStatus: IResidentialStatus;
-    maritalStatus: IMaritalStatus;
-    presentVehicle: IPresentVehicle;
-    financerDetail: IFinancerDetail;
-    customerCooperation: string;
-    neighbourhoodCheck: INeighbourhoodCheck;
-    constructionResidence: IConstructionResidence;
-    exteriorsResidence: IExteriorsResidence;
-    carpetArea: number;
-    picturePortrait: boolean;
-    remarks: string;
-    recommended: boolean;
-    detailsFromNeighbour: IDetailsFromNeighbour;
+	addressConfirmed: boolean;
+	dateOfVisit: Date;
+
+	residenceContacted: ContactedPerson;
+	residenceType:
+		| 'Self owned'
+		| 'Owned by relatives'
+		| 'Rented'
+		| 'Paying Guest'
+		| 'Owned by parents'
+		| 'Owned by friends'
+		| 'Company Accommodation'
+		| 'Lodging';
+
+	maritalStatus: MaritalStatus;
+	vehicleDetails: VehicleDetails;
+	financeDetails: FinanceDetails;
+	nature: 'Polite' | 'Rude' | 'Aggressive' | 'Cooperative' | 'Uncooperative';
+	neighbourhood: 'Positve' | 'Negative' | 'Neutral';
+	neighbourhoodContacted: string[];
+
+	interiors: ResidenceInteriors;
+	exterior: ResidenceExteriors;
+	carpetArea: number;
+	politicalPictures: string;
+	livingStandard: 'High' | 'Medium' | 'Low';
+	remarks: 'Positive' | 'Negative';
+	neighbourhoodObservations: NeighbourhoodObservations;
 }
 
-interface IResidentialStatus {
-    selfOwned: boolean;
-    ownedByRelatives: boolean;
-    rented: boolean;
-    payingGuest: boolean;
-    ownedByParents: boolean;
-    ownedByFriends: boolean;
-    companyAccommodation: boolean;
-    lodging: boolean;
+export interface ContactedPerson {
+	name: string;
+	dob: string;
+	relationship: string;
+	residingFor: string;
+	education: string;
 }
 
-interface IMaritalStatus {
-    maritalStatus: string;
-    noOfFamilyMembers: number;
-    workingPerson: number;
-    dependentAdults: number;
-    children: number;
-    spouseWorking: boolean;
-    spouseEmploymentDetails: string;
+export interface MaritalStatus {
+	status: 'Married' | 'Unmarried' | 'Separated' | 'Widowed';
+	members: number;
+	workingMembers: number;
+	dependents: number;
+	children: number;
+	spouseWorking: boolean;
+	spouseEmploymentDetails: string;
 }
 
-interface IPresentVehicle {
-    twoWheeler: boolean;
-    car: boolean;
-    others: boolean;
+export interface VehicleDetails {
+	twoWheeler: boolean;
+	car: boolean;
+	other: boolean;
 }
 
-interface IFinancerDetail {
-    financerName: string;
-    loanNumber: string;
-    osLoan: string;
-    emi: string;
+export interface FinanceDetails {
+	financerName: string;
+	loanNo: string;
+	loanOs: string;
+	emi: number;
 }
 
-interface INeighbourhoodCheck {
-    positive: boolean;
-    negative: boolean;
-    checkedWith: string;
+export interface ResidenceInteriors {
+	cemented: 'RCC Cemented' | 'Non RCC' | '';
+	painted: boolean;
+	carpeted: boolean;
+	curtains: boolean;
+	sofa: boolean;
+	venetianBlinds: boolean;
 }
 
-interface IConstructionResidence {
-    painted: boolean;
-    clean: boolean;
-    carpeted: boolean;
-    curtains: boolean;
-    sofa: boolean;
-    venetianBlind: boolean;
+export interface ResidenceExteriors {
+	overallCondition: 'Good' | 'Bad' | 'Average' | 'Excellent';
+	television: boolean;
+	refrigerator: boolean;
+	musicSystem: boolean;
+	twoWheeler: boolean;
+	car: boolean;
+	airConditioner: boolean;
 }
 
-interface IExteriorsResidence {
-    television: boolean;
-    refrigerator: boolean;
-    musicSystem: boolean;
-    twoWheeler: boolean;
-    car: boolean;
-    airConditioner: boolean;
+export interface NeighbourhoodObservations {
+	staysInResidence: boolean;
+	availability: string;
+	averageAge: number;
+	noOfMembers: number;
+	remarks: 'Positive' | 'Negative';
 }
-
-interface IDetailsFromNeighbour {
-    applicantStayAtHouse: boolean;
-    ageOfApplicant: number;
-    availabilityOfApplicant: string;
-    noOfFamilyMembers: number;
-}
-
-

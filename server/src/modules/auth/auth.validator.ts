@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
-import { CustomError } from '../../errors';
+import { AUTH_ERRORS, CustomError } from '../../errors';
+import { MASTER_KEY } from '../../config/const';
 
 export type LoginValidationResult = {
 	email: string;
@@ -66,11 +67,15 @@ export async function RegisterAccountValidator(req: Request, res: Response, next
 		phone: z.string().trim(),
 		email: z.string().trim().email(),
 		password: z.string().trim().min(6),
+		masterKey: z.string().trim().min(6),
 	});
 
 	const reqValidatorResult = reqValidator.safeParse(req.body);
 
 	if (reqValidatorResult.success) {
+		if (reqValidatorResult.data.masterKey !== MASTER_KEY) {
+			return next(new CustomError(AUTH_ERRORS.PERMISSION_DENIED));
+		}
 		req.locals.data = reqValidatorResult.data;
 		return next();
 	}

@@ -3,7 +3,9 @@ export const DATABASE_URL = process.env.DATABASE_URL as string;
 export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 export const IS_WINDOWS = process.env.OS === 'WINDOWS';
 
-export const PORT = process.env.PORT !== undefined ? process.env.PORT : undefined;
+export const PORT = process.env.PORT as string;
+
+export const MASTER_KEY = process.env.MASTER_KEY as string
 
 export const JWT_SECRET = process.env.JWT_SECRET ?? 'jwt-secret';
 export const JWT_EXPIRE = process.env.JWT_EXPIRE ?? '3m';
@@ -33,6 +35,15 @@ export enum UserLevel {
 export enum Path {
 	Misc = '/static/misc/',
 	Media = '/static/media/',
+}
+
+export enum TaskStatus {
+	Pending = 'pending',
+	InProgress = 'in-progress',
+	Paused = 'paused',
+	Completed = 'completed',
+	Rejected = 'rejected',
+	Closed = 'closed',
 }
 
 export const CACHE_TIMEOUT = 60 * 60; //seconds
