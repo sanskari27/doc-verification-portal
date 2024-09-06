@@ -1,7 +1,8 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { ContactedPerson } from './verificationForm';
 
 export interface IBusinessVerificationForm extends Document {
+	task_id: Types.ObjectId;
 	businessDetails: BusinessDetails;
 	companyType: 'Proprietorship' | 'Partnership' | 'Private Limited' | 'Public Limited' | 'Others';
 	productDetails: string;

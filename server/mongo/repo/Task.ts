@@ -119,17 +119,46 @@ TaskSchema.pre('save', async function (next) {
 	this.verificationFormId = (
 		await VerificationForm.create({
 			applicantName: this.applicantName || '',
+			task_id: this._id,
 		})
 	)._id;
-	this.residenceVerificationId = (await ResidenceVerificationForm.create({}))._id;
-	this.teleVerificationId = (await TeleVerificationForm.create({}))._id;
-	this.bankVerificationId = (await BankVerificationForm.create({}))._id;
+	this.residenceVerificationId = (
+		await ResidenceVerificationForm.create({
+			task_id: this._id,
+		})
+	)._id;
+	this.teleVerificationId = (
+		await TeleVerificationForm.create({
+			task_id: this._id,
+		})
+	)._id;
+	this.bankVerificationId = (
+		await BankVerificationForm.create({
+			task_id: this._id,
+		})
+	)._id;
 	if (this.verificationType === 'business') {
-		this.businessVerificationId = (await BusinessVerificationForm.create({}))._id;
-		this.incomeVerificationId = (await IncomeTaxVerificationForm.create({}))._id;
+		this.businessVerificationId = (
+			await BusinessVerificationForm.create({
+				task_id: this._id,
+			})
+		)._id;
+		this.incomeVerificationId = (
+			await IncomeTaxVerificationForm.create({
+				task_id: this._id,
+			})
+		)._id;
 	} else {
-		this.employmentVerificationId = (await EmploymentVerificationForm.create({}))._id;
-		this.incomeVerificationId = (await IncomeTaxVerificationForm.create({}))._id;
+		this.employmentVerificationId = (
+			await EmploymentVerificationForm.create({
+				task_id: this._id,
+			})
+		)._id;
+		this.incomeVerificationId = (
+			await IncomeTaxVerificationForm.create({
+				task_id: this._id,
+			})
+		)._id;
 	}
 });
 

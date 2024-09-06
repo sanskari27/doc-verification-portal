@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { BankDetails, IBankVerificationForm } from '../types/bankVerificationForm';
+import { TaskDB_name } from './Task';
 
 const BankDetailsSchema = new mongoose.Schema<BankDetails>(
 	{
@@ -22,6 +23,11 @@ const BankDetailsSchema = new mongoose.Schema<BankDetails>(
 );
 
 const BankVerificationFormSchema = new mongoose.Schema<IBankVerificationForm>({
+	task_id: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: TaskDB_name,
+		required: true,
+	},
 	applicant: BankDetailsSchema,
 	coApplicant: BankDetailsSchema,
 });

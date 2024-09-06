@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { ContactedPerson, IVerificationForm } from '../types/verificationForm';
+import { TaskDB_name } from './Task';
 
 export const ContactedPersonSchema = new mongoose.Schema<ContactedPerson>(
 	{
@@ -24,6 +25,11 @@ export const ContactedPersonSchema = new mongoose.Schema<ContactedPerson>(
 );
 
 const VerificationFormSchema = new mongoose.Schema<IVerificationForm>({
+	task_id: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: TaskDB_name,
+		required: true,
+	},
 	applicantName: {
 		type: String,
 		required: true,

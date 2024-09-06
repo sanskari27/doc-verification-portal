@@ -1,6 +1,7 @@
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface IResidenceVerificationForm extends Document {
+	task_id: Types.ObjectId;
 	addressConfirmed: boolean;
 	dateOfVisit: Date;
 
