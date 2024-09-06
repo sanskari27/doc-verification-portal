@@ -2,11 +2,19 @@ import mongoose from 'mongoose';
 import { TaskStatus } from '../../src/config/const';
 import { ITask } from '../types/task';
 import { AccountDB_name } from './Account';
-import { BankVerificationFormDB_name } from './BankVerificationForm';
-import { EmploymentVerificationFormDB_name } from './EmploymentVerificationForm';
-import { IncomeTaxVerificationFormDB_name } from './IncomeTaxVerificationForm';
-import { ResidenceVerificationFormDB_name } from './ResidenceVerificationForm';
-import { TeleVerificationFormDB_name } from './TeleVerificationForm';
+import BankVerificationForm, { BankVerificationFormDB_name } from './BankVerificationForm';
+import BusinessVerificationForm from './BusinessVerificationForm';
+import EmploymentVerificationForm, {
+	EmploymentVerificationFormDB_name,
+} from './EmploymentVerificationForm';
+import IncomeTaxVerificationForm, {
+	IncomeTaxVerificationFormDB_name,
+} from './IncomeTaxVerificationForm';
+import ResidenceVerificationForm, {
+	ResidenceVerificationFormDB_name,
+} from './ResidenceVerificationForm';
+import TeleVerificationForm, { TeleVerificationFormDB_name } from './TeleVerificationForm';
+import VerificationForm from './VerificationForm';
 
 const TaskSchema = new mongoose.Schema<ITask>(
 	{
@@ -60,7 +68,10 @@ const TaskSchema = new mongoose.Schema<ITask>(
 			enum: ['business', 'non-business', 'nri'],
 			required: true,
 		},
-
+		applicantName: {
+			type: String,
+			required: true,
+		},
 		verificationFormId: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: BankVerificationFormDB_name,
@@ -92,6 +103,36 @@ const TaskSchema = new mongoose.Schema<ITask>(
 	},
 	{ timestamps: true }
 );
+
+TaskSchema.index({
+	verificationFormId: 1,
+	teleVerificationId: 1,
+	residenceVerificationId: 1,
+	incomeVerificationId: 1,
+	bankVerificationId: 1,
+	employmentVerificationId: 1,
+	businessVerificationId: 1,
+});
+
+TaskSchema.pre('save', async function (next) {
+	if (!this.isNew) return next();
+	this.verificationFormId = (
+		await VerificationForm.create({
+			applicantName: this.applicantName || '',
+		})
+	)._id;
+	this.residenceVerificationId = (await ResidenceVerificationForm.create({}))._id;
+	this.teleVerificationId = (await TeleVerificationForm.create({}))._id;
+	this.bankVerificationId = (await BankVerificationForm.create({}))._id;
+	if (this.verificationType === 'business') {
+		this.businessVerificationId = (await BusinessVerificationForm.create({}))._id;
+		this.incomeVerificationId = (await IncomeTaxVerificationForm.create({}))._id;
+	} else {
+		this.employmentVerificationId = (await EmploymentVerificationForm.create({}))._id;
+		this.incomeVerificationId = (await IncomeTaxVerificationForm.create({}))._id;
+	}
+});
+
 export const TaskDB_name = 'Task';
 
 export default mongoose.model<ITask>(TaskDB_name, TaskSchema);
