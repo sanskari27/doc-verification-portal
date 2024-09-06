@@ -23,6 +23,8 @@ export interface IEmploymentVerificationForm extends Document {
 	jobTransferable: boolean;
 	salaryDetails: SalaryDetails;
 
+	interiors: EmploymentInteriors;
+
 	recommended: 'Recommended' | 'Not Recommended';
 	remarks: string;
 	officeRemarks: "Positive" | "Negative";

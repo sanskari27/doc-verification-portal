@@ -50,9 +50,9 @@ export interface MaritalStatus {
 }
 
 export interface VehicleDetails {
-	twoWheeler: string;
-	car: string;
-	other: string;
+	twoWheeler: boolean;
+	car: boolean;
+	other: boolean;
 }
 
 export interface FinanceDetails {

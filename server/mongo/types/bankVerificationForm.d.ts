@@ -15,10 +15,3 @@ export interface BankDetails {
 	cd: string;
 	remarks: 'Recommended' | 'Not Recommended';
 }
-
-export interface BusinessInteriors {
-	painted: boolean;
-	carpeted: boolean;
-	curtains: boolean;
-	clean: boolean;
-}
