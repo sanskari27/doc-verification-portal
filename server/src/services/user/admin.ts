@@ -1,10 +1,11 @@
 import { Types } from 'mongoose';
 import { AccountDB } from '../../../mongo';
 import IAccount from '../../../mongo/types/account';
-import { UserLevel } from '../../config/const';
+import { TaskStatus, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
 import { generateText } from '../../utils/ExpressUtils';
 import AccountService from '../auth/account';
+import TaskService from '../task/task';
 import AgentService from './agent';
 
 export default class AdminService extends AccountService {
@@ -67,5 +68,18 @@ export default class AdminService extends AccountService {
 			agentId,
 			parent: this.userId,
 		});
+	}
+
+	async listTasks(
+		query: Partial<{
+			date_range?: {
+				start: Date;
+				end: Date;
+			};
+			priority: 'low' | 'medium' | 'high';
+			status: TaskStatus;
+		}>
+	) {
+		return TaskService.getTasks(this.userId, query);
 	}
 }

@@ -6,13 +6,16 @@ import { TaskStatus, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
 import { generateText } from '../../utils/ExpressUtils';
 import AccountService from '../auth/account';
+import TaskService from '../task/task';
 
 export default class AgentService extends AccountService {
+	private taskService: TaskService;
 	public constructor(account: IAccount) {
 		if (account.userLevel !== UserLevel.Master) {
 			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
 		}
 		super(account);
+		this.taskService = new TaskService(this);
 	}
 
 	static async addAgent(details: {
@@ -93,5 +96,18 @@ export default class AgentService extends AccountService {
 		return await AgentService.listAgents({
 			parent: this.userId,
 		});
+	}
+
+	async listTasks(
+		query: Partial<{
+			date_range?: {
+				start: Date;
+				end: Date;
+			};
+			priority: 'low' | 'medium' | 'high';
+			status: TaskStatus;
+		}>
+	) {
+		return TaskService.getAssignedTasks(this.userId, query);
 	}
 }
