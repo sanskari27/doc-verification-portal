@@ -22,4 +22,6 @@ export interface ITask extends Document {
 	bankVerificationId: Types.ObjectId;
 	employmentVerificationId: Types.ObjectId;
 	businessVerificationId: Types.ObjectId;
+
+	createdAt: Date;
 }
