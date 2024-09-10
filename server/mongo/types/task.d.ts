@@ -3,9 +3,6 @@ import { TaskStatus } from '../../src/config/const';
 
 export interface ITask extends Document {
 	_id: Types.ObjectId;
-	assignedBy: Types.ObjectId;
-	agentsInvolved: Types.ObjectId[];
-	assignedTo: Types.ObjectId;
 	dueDate: Date;
 	completedAt: Date | null;
 	status: TaskStatus;

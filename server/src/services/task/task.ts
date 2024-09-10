@@ -8,6 +8,7 @@ import {
 	ResidenceVerificationFormDB,
 	TaskDB,
 	TeleVerificationFormDB,
+	VerificationFormDB,
 } from '../../../mongo';
 import VerificationForm from '../../../mongo/repo/VerificationForm';
 import { IVerificationForm } from '../../../mongo/types/verificationForm';
@@ -38,13 +39,17 @@ export default class TaskService {
 			throw new CustomError(ERRORS.PERMISSION_DENIED);
 		}
 
-		const task = await TaskDB.create({
-			...details,
-			assignedBy: this._account.userId,
-			agentsInvolved: [this._account.userId, details.assignedTo],
-		});
+		const task = await TaskDB.create(details);
 
 		return task._id;
+	}
+
+	public async getNavigationLink(task_id: Types.ObjectId) {
+		const form = await VerificationFormDB.findOne({ task_id });
+		if (form && form.residence) {
+			return `http://maps.google.com/?q=${encodeURIComponent(form.residence)}`;
+		}
+		return null;
 	}
 
 	public async updateTask(
@@ -152,7 +157,6 @@ export default class TaskService {
 	public async getTask(taskId: Types.ObjectId) {
 		const task = await TaskDB.findOne({
 			_id: taskId,
-			agentsInvolved: this._account.userId,
 		});
 
 		if (!task) {
@@ -160,9 +164,6 @@ export default class TaskService {
 		}
 
 		return {
-			assignedBy: task.assignedBy,
-			agentsInvolved: task.agentsInvolved,
-			assignedTo: task.assignedTo,
 			dueDate: task.dueDate,
 			completedAt: task.completedAt,
 			status: task.status,
@@ -219,17 +220,16 @@ export default class TaskService {
 	}
 
 	public async resignTask(taskId: Types.ObjectId, assignTo: Types.ObjectId) {
-		const { modifiedCount } = await TaskDB.updateOne(
-			{
-				_id: taskId,
-			},
-			{
-				$set: { assignedTo: assignTo },
-				$addToSet: { agentsInvolved: assignTo },
-			}
-		);
-
-		return modifiedCount > 0;
+		// const { modifiedCount } = await TaskDB.updateOne(
+		// 	{
+		// 		_id: taskId,
+		// 	},
+		// 	{
+		// 		$set: { assignedTo: assignTo },
+		// 		$addToSet: { agentsInvolved: assignTo },
+		// 	}
+		// );
+		// return modifiedCount > 0;
 	}
 
 	public static async getAssignedTasks(
@@ -320,6 +320,78 @@ export default class TaskService {
 
 		return docs.map(processDocs);
 	}
+
+	public static async getTasks(
+		agentId: Types.ObjectId,
+		query: Partial<{
+			date_range?: {
+				start: Date;
+				end: Date;
+			};
+			priority: 'low' | 'medium' | 'high';
+			status: TaskStatus;
+		}>
+	) {
+		let docs = await TaskDB.aggregate([
+			{
+				$match: {
+					$and: [
+						{ assignedBy: agentId },
+						{
+							...(query.date_range && {
+								due_date: {
+									$gte: query.date_range.start,
+									$lte: query.date_range.end,
+								},
+							}),
+						},
+						{ ...(query.priority && { priority: query.priority }) },
+						{ ...(query.status && { status: query.status }) },
+					],
+				},
+			},
+			
+
+			{
+				$project: {
+					_id: 1,
+					title: 1,
+					description: 1,
+					priority: 1,
+					dueDate: 1,
+					completedAt: 1,
+					status: 1,
+					formattedDate: {
+						$dateToString: { format: '%Y-%m-%d', date: '$due_date' },
+					},
+					priorityValue: {
+						$switch: {
+							branches: [
+								{ case: { $eq: ['$priority', 'high'] }, then: 1 },
+								{ case: { $eq: ['$priority', 'medium'] }, then: 2 },
+								{ case: { $eq: ['$priority', 'low'] }, then: 3 },
+							],
+							default: 4, // Assign a default value for any unexpected priority values
+						},
+					},
+				},
+			},
+		]);
+
+		docs = docs.sort((a, b) => {
+			const momentA = DateUtils.getMoment(a.due_date).startOf('day');
+			const momentB = DateUtils.getMoment(b.due_date).startOf('day');
+
+			if (momentA.isBefore(momentB)) {
+				return -1;
+			} else if (momentA.isAfter(momentB)) {
+				return 1;
+			}
+			return a.priorityValue - b.priorityValue;
+		});
+
+		return docs.map(processDocs);
+	}
 }
 
 function processDocs(doc: any): {
@@ -329,11 +401,10 @@ function processDocs(doc: any): {
 	priority: 'low' | 'medium' | 'high';
 	dueDate: string;
 	relativeDate: string;
-	assigned_to: {
+	assignedTo: {
 		id: string;
 		name: string;
-		email: string;
-	}[];
+	};
 	createdAt: string;
 	status: string;
 	isOverdue: boolean;
@@ -346,12 +417,10 @@ function processDocs(doc: any): {
 		createdAt: DateUtils.getMoment(doc.createdAt).format('MMM Do, YYYY hh:mm A'),
 		dueDate: DateUtils.getMoment(doc.dueDate).format('MMM Do, YYYY hh:mm A'),
 		relativeDate: DateUtils.getMoment(doc.dueDate).fromNow(),
-		assigned_to: doc.assigned_to.map((e: any) => {
-			return {
-				id: e.id as string,
-				name: e.name as string,
-			};
-		}),
+		assignedTo: {
+			id: doc.assignedTo.id,
+			name: doc.assignedTo.name,
+		},
 		status: doc.status,
 		isOverdue:
 			doc.status === 'completed'
