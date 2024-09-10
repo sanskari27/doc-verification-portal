@@ -49,6 +49,7 @@ const EmploymentVerificationFormSchema = new mongoose.Schema<IEmploymentVerifica
 		type: mongoose.Schema.Types.ObjectId,
 		ref: TaskDB_name,
 		required: true,
+		unique: true,
 	},
 	officeAddress: {
 		type: String,

@@ -42,6 +42,7 @@ const IncomeTaxVerificationFormSchema = new mongoose.Schema<IIncomeTaxVerificati
 		type: mongoose.Schema.Types.ObjectId,
 		ref: TaskDB_name,
 		required: true,
+		unique: true,
 	},
 	panNo: {
 		type: String,

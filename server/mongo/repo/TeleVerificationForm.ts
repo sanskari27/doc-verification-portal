@@ -102,6 +102,7 @@ const TeleVerificationFormSchema = new mongoose.Schema<ITeleVerificationForm>({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: TaskDB_name,
 		required: true,
+		unique: true,
 	},
 	residenceContacted: ContactedPersonSchema,
 	officeContacted: ContactedPersonSchema,

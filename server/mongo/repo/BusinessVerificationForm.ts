@@ -31,6 +31,7 @@ const BusinessVerificationFormSchema = new mongoose.Schema<IBusinessVerification
 		type: mongoose.Schema.Types.ObjectId,
 		ref: TaskDB_name,
 		required: true,
+		unique: true,
 	},
 	businessDetails: BusinessDetailsSchema,
 	companyType: {

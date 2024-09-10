@@ -27,6 +27,7 @@ const BankVerificationFormSchema = new mongoose.Schema<IBankVerificationForm>({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: TaskDB_name,
 		required: true,
+		unique: true,
 	},
 	applicant: BankDetailsSchema,
 	coApplicant: BankDetailsSchema,

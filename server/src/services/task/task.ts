@@ -350,7 +350,6 @@ export default class TaskService {
 					],
 				},
 			},
-			
 
 			{
 				$project: {

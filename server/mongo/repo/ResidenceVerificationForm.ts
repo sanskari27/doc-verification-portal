@@ -79,6 +79,7 @@ const ResidenceVerificationFormSchema = new mongoose.Schema<IResidenceVerificati
 		type: mongoose.Schema.Types.ObjectId,
 		ref: TaskDB_name,
 		required: true,
+		unique: true,
 	},
 	addressConfirmed: {
 		type: Boolean,

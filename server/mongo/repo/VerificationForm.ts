@@ -29,6 +29,7 @@ const VerificationFormSchema = new mongoose.Schema<IVerificationForm>({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: TaskDB_name,
 		required: true,
+		unique: true,
 	},
 	applicantName: {
 		type: String,
