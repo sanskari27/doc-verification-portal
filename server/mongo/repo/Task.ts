@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { TaskStatus } from '../../src/config/const';
 import { ITask } from '../types/task';
-import { AccountDB_name } from './Account';
 import BankVerificationForm, { BankVerificationFormDB_name } from './BankVerificationForm';
 import BusinessVerificationForm from './BusinessVerificationForm';
 import EmploymentVerificationForm, {
@@ -18,22 +17,6 @@ import VerificationForm from './VerificationForm';
 
 const TaskSchema = new mongoose.Schema<ITask>(
 	{
-		assignedBy: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: AccountDB_name,
-			required: true,
-		},
-		agentsInvolved: {
-			type: [mongoose.Schema.Types.ObjectId],
-			ref: AccountDB_name,
-			required: true,
-			default: [],
-		},
-		assignedTo: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: AccountDB_name,
-			required: true,
-		},
 		dueDate: {
 			type: Date,
 			required: true,

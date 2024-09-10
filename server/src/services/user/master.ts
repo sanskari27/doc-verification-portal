@@ -1,8 +1,9 @@
 import { Types } from 'mongoose';
 import IAccount from '../../../mongo/types/account';
-import { UserLevel } from '../../config/const';
+import { TaskStatus, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
 import AccountService from '../auth/account';
+import TaskService from '../task/task';
 import AdminService from './admin';
 import AgentService from './agent';
 
@@ -52,5 +53,18 @@ export default class MasterService extends AccountService {
 		return await AgentService.listAgents({
 			parent: this.userId,
 		});
+	}
+
+	async listTasks(
+		query: Partial<{
+			date_range?: {
+				start: Date;
+				end: Date;
+			};
+			priority: 'low' | 'medium' | 'high';
+			status: TaskStatus;
+		}>
+	) {
+		return TaskService.getTasks(this.userId, query);
 	}
 }
