@@ -1,16 +1,23 @@
 import { Types } from 'mongoose';
 import {
-	AccountDB,
 	BankVerificationFormDB,
 	BusinessVerificationFormDB,
 	EmploymentVerificationFormDB,
 	IncomeVerificationFormDB,
 	ResidenceVerificationFormDB,
 	TaskDB,
+	TaskManagerDB,
 	TeleVerificationFormDB,
 	VerificationFormDB,
 } from '../../../mongo';
 import VerificationForm from '../../../mongo/repo/VerificationForm';
+import IAccount from '../../../mongo/types/account';
+import { IBankVerificationForm } from '../../../mongo/types/bankVerificationForm';
+import { IBusinessVerificationForm } from '../../../mongo/types/businessVerificationForm';
+import { IEmploymentVerificationForm } from '../../../mongo/types/employmentVerificationForm';
+import { IIncomeTaxVerificationForm } from '../../../mongo/types/incomeTaxVerificationForm';
+import { IResidenceVerificationForm } from '../../../mongo/types/residenceVerificationForm';
+import { ITeleVerificationForm } from '../../../mongo/types/teleVerificationForm';
 import { IVerificationForm } from '../../../mongo/types/verificationForm';
 import { TaskStatus, UserLevel } from '../../config/const';
 import { CustomError, ERRORS } from '../../errors';
@@ -40,6 +47,11 @@ export default class TaskService {
 		}
 
 		const task = await TaskDB.create(details);
+		await TaskManagerDB.create({
+			taskId: task._id,
+			assignedBy: this._account.userId,
+			assignedTo: details.assignedTo,
+		});
 
 		return task._id;
 	}
@@ -154,32 +166,88 @@ export default class TaskService {
 		return updated.modifiedCount > 0;
 	}
 
+	public async fetchFormData(
+		taskId: Types.ObjectId,
+		type: 'bank' | 'business' | 'employment' | 'income' | 'residence' | 'tele' | 'verification'
+	) {
+		const task = await TaskDB.findById(taskId);
+		if (!task) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
+		let form;
+		switch (type) {
+			case 'verification':
+				form = await VerificationFormDB.findOne({ task_id: taskId });
+				break;
+			case 'bank':
+				form = await BankVerificationFormDB.findOne({ task_id: taskId });
+				break;
+			case 'business':
+				form = await BusinessVerificationFormDB.findOne({ task_id: taskId });
+				break;
+			case 'employment':
+				form = await EmploymentVerificationFormDB.findOne({ task_id: taskId });
+				break;
+			case 'income':
+				form = await IncomeVerificationFormDB.findOne({ task_id: taskId });
+				break;
+			case 'residence':
+				form = await ResidenceVerificationFormDB.findOne({ task_id: taskId });
+				break;
+			case 'tele':
+				form = await TeleVerificationFormDB.findOne({ task_id: taskId });
+				break;
+			default:
+				throw new CustomError(ERRORS.INVALID_FIELDS);
+		}
+		if (!form) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
+
+		const { _id, __v, task_id, ...formData } = form.toObject();
+
+		return formData;
+	}
+
 	public async getTask(taskId: Types.ObjectId) {
+		const managedByMe = await TaskManagerDB.findOne({
+			$or: [{ assignedBy: this._account.userId }, { assignedTo: this._account.userId }],
+			taskId,
+		});
+
+		if (!managedByMe) {
+			throw new CustomError(ERRORS.PERMISSION_DENIED);
+		}
+
 		const task = await TaskDB.findOne({
 			_id: taskId,
-		});
+		}).populate<{
+			verificationFormId: IVerificationForm;
+			teleVerificationId: ITeleVerificationForm;
+			residenceVerificationId: IResidenceVerificationForm;
+			incomeVerificationId: IIncomeTaxVerificationForm;
+			bankVerificationId: IBankVerificationForm;
+			employmentVerificationId: IEmploymentVerificationForm;
+			businessVerificationId: IBusinessVerificationForm;
+		}>(
+			'verificationFormId teleVerificationId residenceVerificationId incomeVerificationId bankVerificationId employmentVerificationId businessVerificationId'
+		);
 
 		if (!task) {
 			throw new CustomError(ERRORS.NOT_FOUND);
 		}
 
 		return {
-			dueDate: task.dueDate,
-			completedAt: task.completedAt,
-			status: task.status,
-			priority: task.priority,
-			title: task.title,
-			description: task.description,
+			...processDocs(task),
 
-			verificationType: task.verificationType,
-			applicantName: task.applicantName,
-			verificationFormId: task.verificationFormId,
-			teleVerificationId: task.teleVerificationId,
-			residenceVerificationId: task.residenceVerificationId,
-			incomeVerificationId: task.incomeVerificationId,
-			bankVerificationId: task.bankVerificationId,
-			employmentVerificationId: task.employmentVerificationId,
-			businessVerificationId: task.businessVerificationId,
+			status: {
+				teleVerification: task.teleVerificationId?.verificationResult ?? 'N/A',
+				residenceVerification: task.residenceVerificationId?.remarks ?? 'N/A',
+				incomeVerification: task.incomeVerificationId?.remarks ?? 'N/A',
+				bankVerification: task.bankVerificationId?.remarks ?? 'N/A',
+				employmentVerification: task.employmentVerificationId?.officeRemarks ?? 'N/A',
+				businessVerification: task.businessVerificationId?.recommended ?? 'N/A',
+			},
 		};
 	}
 
@@ -219,20 +287,48 @@ export default class TaskService {
 		throw new CustomError(ERRORS.NOT_FOUND);
 	}
 
-	public async resignTask(taskId: Types.ObjectId, assignTo: Types.ObjectId) {
-		// const { modifiedCount } = await TaskDB.updateOne(
-		// 	{
-		// 		_id: taskId,
-		// 	},
-		// 	{
-		// 		$set: { assignedTo: assignTo },
-		// 		$addToSet: { agentsInvolved: assignTo },
-		// 	}
-		// );
-		// return modifiedCount > 0;
+	public async assignTask(taskId: Types.ObjectId, assignTo: Types.ObjectId) {
+		const managedByMe = await TaskManagerDB.findOne({
+			taskId,
+			assignedBy: this._account.userId,
+		});
+
+		if (!managedByMe) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
+
+		await TaskManagerDB.create({
+			taskId,
+			assignedBy: this._account.userId,
+			assignedTo: assignTo,
+			level: managedByMe.level + 1,
+		});
 	}
 
-	public static async getAssignedTasks(
+	public async transferTask(taskId: Types.ObjectId, assignTo: Types.ObjectId) {
+		const managedByMe = await TaskManagerDB.findOne({
+			taskId,
+			assignedBy: this._account.userId,
+		});
+
+		if (!managedByMe) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
+
+		await TaskManagerDB.deleteMany({
+			taskId,
+			level: { $gt: managedByMe.level },
+		});
+
+		await TaskManagerDB.create({
+			taskId,
+			assignedBy: this._account.userId,
+			assignedTo: assignTo,
+			level: managedByMe.level + 1,
+		});
+	}
+
+	public static async assignedBy(
 		agentId: Types.ObjectId,
 		query: Partial<{
 			date_range?: {
@@ -241,87 +337,63 @@ export default class TaskService {
 			};
 			priority: 'low' | 'medium' | 'high';
 			status: TaskStatus;
-		}>
+		}> = {}
 	) {
-		let docs = await TaskDB.aggregate([
-			{
-				$match: {
-					$and: [
-						{ agentsInvolved: agentId },
-						{
-							...(query.date_range && {
-								due_date: {
-									$gte: query.date_range.start,
-									$lte: query.date_range.end,
-								},
-							}),
-						},
-						{ ...(query.priority && { priority: query.priority }) },
-						{ ...(query.status && { status: query.status }) },
-					],
-				},
-			},
-			{
-				$lookup: {
-					from: AccountDB.collection.name,
-					localField: 'assignedTo',
-					foreignField: '_id',
-					as: 'assignedTo',
-				},
-			},
-			{
-				$project: {
-					_id: 1,
+		const managedTasks = await TaskManagerDB.find({ assignedBy: agentId }).populate<{
+			assignedTo: IAccount;
+		}>('assignedTo');
 
-					assigned_to: {
-						$map: {
-							input: '$assigned_to',
-							as: 'assigned',
-							in: {
-								id: '$$assigned._id',
-								name: '$$assigned.name',
-							},
+		const taskIds = managedTasks.reduce((acc, task) => {
+			acc[task.taskId._id.toString()] = task.assignedTo.name;
+			return acc;
+		}, {} as Record<string, string>);
+
+		const records = await TaskDB.find({
+			_id: { $in: Object.keys(taskIds).map((id) => new Types.ObjectId(id)) },
+			$and: [
+				{
+					...(query.date_range && {
+						due_date: {
+							$gte: query.date_range.start,
+							$lte: query.date_range.end,
 						},
-					},
-					title: 1,
-					description: 1,
-					priority: 1,
-					dueDate: 1,
-					completedAt: 1,
-					status: 1,
-					formattedDate: {
-						$dateToString: { format: '%Y-%m-%d', date: '$due_date' },
-					},
-					priorityValue: {
-						$switch: {
-							branches: [
-								{ case: { $eq: ['$priority', 'high'] }, then: 1 },
-								{ case: { $eq: ['$priority', 'medium'] }, then: 2 },
-								{ case: { $eq: ['$priority', 'low'] }, then: 3 },
-							],
-							default: 4, // Assign a default value for any unexpected priority values
-						},
-					},
+					}),
 				},
-			},
-		]);
+				{ ...(query.priority && { priority: query.priority }) },
+				{ ...(query.status && { status: query.status }) },
+			],
+		})
+			.populate<{
+				verificationFormId: IVerificationForm;
+				teleVerificationId: ITeleVerificationForm;
+				residenceVerificationId: IResidenceVerificationForm;
+				incomeVerificationId: IIncomeTaxVerificationForm;
+				bankVerificationId: IBankVerificationForm;
+				employmentVerificationId: IEmploymentVerificationForm;
+				businessVerificationId: IBusinessVerificationForm;
+			}>(
+				'verificationFormId teleVerificationId residenceVerificationId incomeVerificationId bankVerificationId employmentVerificationId businessVerificationId'
+			)
+			.sort({ due_date: 1 });
 
-		docs = docs.sort((a, b) => {
-			const momentA = DateUtils.getMoment(a.due_date).startOf('day');
-			const momentB = DateUtils.getMoment(b.due_date).startOf('day');
-
-			if (momentA.isBefore(momentB)) {
-				return -1;
-			} else if (momentA.isAfter(momentB)) {
-				return 1;
-			}
-			return a.priorityValue - b.priorityValue;
+		return records.map((record) => {
+			const assignedTo = taskIds[record._id.toString()];
+			return {
+				...processDocs(record),
+				assignedTo: assignedTo,
+				status: {
+					teleVerification: record.teleVerificationId?.verificationResult ?? 'N/A',
+					residenceVerification: record.residenceVerificationId?.remarks ?? 'N/A',
+					incomeVerification: record.incomeVerificationId?.remarks ?? 'N/A',
+					bankVerification: record.bankVerificationId?.remarks ?? 'N/A',
+					employmentVerification: record.employmentVerificationId?.officeRemarks ?? 'N/A',
+					businessVerification: record.businessVerificationId?.recommended ?? 'N/A',
+				},
+			};
 		});
-
-		return docs.map(processDocs);
 	}
 
-	public static async getTasks(
+	public static async assignedTo(
 		agentId: Types.ObjectId,
 		query: Partial<{
 			date_range?: {
@@ -330,66 +402,60 @@ export default class TaskService {
 			};
 			priority: 'low' | 'medium' | 'high';
 			status: TaskStatus;
-		}>
+		}> = {}
 	) {
-		let docs = await TaskDB.aggregate([
-			{
-				$match: {
-					$and: [
-						{ assignedBy: agentId },
-						{
-							...(query.date_range && {
-								due_date: {
-									$gte: query.date_range.start,
-									$lte: query.date_range.end,
-								},
-							}),
+		const managedTasks = await TaskManagerDB.find({ assignedTo: agentId }).populate<{
+			assignedBy: IAccount;
+		}>('assignedBy');
+
+		const taskIds = managedTasks.reduce((acc, task) => {
+			acc[task.taskId._id.toString()] = task.assignedBy.name;
+			return acc;
+		}, {} as Record<string, string>);
+
+		const records = await TaskDB.find({
+			_id: { $in: Object.keys(taskIds).map((id) => new Types.ObjectId(id)) },
+			$and: [
+				{
+					...(query.date_range && {
+						due_date: {
+							$gte: query.date_range.start,
+							$lte: query.date_range.end,
 						},
-						{ ...(query.priority && { priority: query.priority }) },
-						{ ...(query.status && { status: query.status }) },
-					],
+					}),
 				},
-			},
+				{ ...(query.priority && { priority: query.priority }) },
+				{ ...(query.status && { status: query.status }) },
+			],
+		})
+			.populate<{
+				verificationFormId: IVerificationForm;
+				teleVerificationId: ITeleVerificationForm;
+				residenceVerificationId: IResidenceVerificationForm;
+				incomeVerificationId: IIncomeTaxVerificationForm;
+				bankVerificationId: IBankVerificationForm;
+				employmentVerificationId: IEmploymentVerificationForm;
+				businessVerificationId: IBusinessVerificationForm;
+			}>(
+				'verificationFormId teleVerificationId residenceVerificationId incomeVerificationId bankVerificationId employmentVerificationId businessVerificationId'
+			)
+			.sort({ due_date: 1 });
 
-			{
-				$project: {
-					_id: 1,
-					title: 1,
-					description: 1,
-					priority: 1,
-					dueDate: 1,
-					completedAt: 1,
-					status: 1,
-					formattedDate: {
-						$dateToString: { format: '%Y-%m-%d', date: '$due_date' },
-					},
-					priorityValue: {
-						$switch: {
-							branches: [
-								{ case: { $eq: ['$priority', 'high'] }, then: 1 },
-								{ case: { $eq: ['$priority', 'medium'] }, then: 2 },
-								{ case: { $eq: ['$priority', 'low'] }, then: 3 },
-							],
-							default: 4, // Assign a default value for any unexpected priority values
-						},
-					},
+		return records.map((record) => {
+			const assignedBy = taskIds[record._id.toString()];
+			return {
+				...processDocs(record),
+				assignedBy: assignedBy,
+				status: {
+					teleVerification: record.teleVerificationId?.verificationResult ?? 'N/A',
+					residenceVerification: record.residenceVerificationId?.remarks ?? 'N/A',
+					incomeVerification: record.incomeVerificationId?.remarks ?? 'N/A',
+					bankVerification: record.bankVerificationId?.remarks ?? 'N/A',
+					employmentVerification: record.employmentVerificationId?.officeRemarks ?? 'N/A',
+					businessVerification: record.businessVerificationId?.recommended ?? 'N/A',
 				},
-			},
-		]);
-
-		docs = docs.sort((a, b) => {
-			const momentA = DateUtils.getMoment(a.due_date).startOf('day');
-			const momentB = DateUtils.getMoment(b.due_date).startOf('day');
-
-			if (momentA.isBefore(momentB)) {
-				return -1;
-			} else if (momentA.isAfter(momentB)) {
-				return 1;
-			}
-			return a.priorityValue - b.priorityValue;
+			};
 		});
-
-		return docs.map(processDocs);
 	}
 }
 
@@ -400,10 +466,6 @@ function processDocs(doc: any): {
 	priority: 'low' | 'medium' | 'high';
 	dueDate: string;
 	relativeDate: string;
-	assignedTo: {
-		id: string;
-		name: string;
-	};
 	createdAt: string;
 	status: string;
 	isOverdue: boolean;
@@ -416,10 +478,6 @@ function processDocs(doc: any): {
 		createdAt: DateUtils.getMoment(doc.createdAt).format('MMM Do, YYYY hh:mm A'),
 		dueDate: DateUtils.getMoment(doc.dueDate).format('MMM Do, YYYY hh:mm A'),
 		relativeDate: DateUtils.getMoment(doc.dueDate).fromNow(),
-		assignedTo: {
-			id: doc.assignedTo.id,
-			name: doc.assignedTo.name,
-		},
 		status: doc.status,
 		isOverdue:
 			doc.status === 'completed'

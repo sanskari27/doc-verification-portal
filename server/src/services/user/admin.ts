@@ -80,6 +80,6 @@ export default class AdminService extends AccountService {
 			status: TaskStatus;
 		}>
 	) {
-		return TaskService.getTasks(this.userId, query);
+		return TaskService.assignedTo(this.userId, query);
 	}
 }

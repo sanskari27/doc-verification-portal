@@ -133,6 +133,15 @@ export default class AccountService {
 			sendLoginCredentialsEmail(email, email, password);
 			return user._id;
 		} catch (err) {
+			const user = await AccountDB.findOne({ email });
+			if (user?.disabled) {
+				user.disabled = false;
+				user.password = password;
+				await user.save();
+				sendLoginCredentialsEmail(email, email, password);
+				return user._id;
+			}
+
 			throw new CustomError(AUTH_ERRORS.USER_ALREADY_EXISTS);
 		}
 	}

@@ -9,6 +9,7 @@ export {
 	SessionDB,
 	StorageDB,
 	TaskDB,
+	TaskManagerDB,
 	TeleVerificationFormDB,
 	VerificationFormDB,
 } from './repo';

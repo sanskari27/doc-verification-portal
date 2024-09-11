@@ -4,7 +4,6 @@ import {
 	IncomeTaxFinancialYear,
 	IncomeTaxRecord,
 } from '../types/incomeTaxVerificationForm';
-import { TaskDB_name } from './Task';
 
 const IncomeTaxRecordSchema = new mongoose.Schema<IncomeTaxRecord>(
 	{
@@ -40,17 +39,21 @@ const IncomeTaxFinancialYearSchema = new mongoose.Schema<IncomeTaxFinancialYear>
 const IncomeTaxVerificationFormSchema = new mongoose.Schema<IIncomeTaxVerificationForm>({
 	task_id: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: TaskDB_name,
+		ref: 'Task',
 		required: true,
 		unique: true,
 	},
 	panNo: {
 		type: String,
-		required: true,
+		default: '',
 	},
 	financialRecords: {
 		type: [IncomeTaxFinancialYearSchema],
 		default: [],
+	},
+	remarks: {
+		type: String,
+		enum: ['Positive', 'Negative'],
 	},
 });
 

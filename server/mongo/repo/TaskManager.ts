@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { ITaskManager } from '../types/taskManager';
 import { AccountDB_name } from './Account';
-import { TaskDB_name } from './Task';
 
 const TaskManagerSchema = new mongoose.Schema<ITaskManager>(
 	{
@@ -17,11 +16,12 @@ const TaskManagerSchema = new mongoose.Schema<ITaskManager>(
 		},
 		taskId: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: TaskDB_name,
+			ref: 'Task',
 			required: true,
 		},
 		level: {
 			type: Number,
+			default: 1,
 			required: true,
 		},
 	},
@@ -30,4 +30,5 @@ const TaskManagerSchema = new mongoose.Schema<ITaskManager>(
 
 export const TaskManagerDB_name = 'TaskManager';
 
-export default mongoose.model<ITaskManager>(TaskManagerDB_name, TaskManagerSchema);
+const TaskManager = mongoose.model<ITaskManager>(TaskManagerDB_name, TaskManagerSchema);
+export default TaskManager;

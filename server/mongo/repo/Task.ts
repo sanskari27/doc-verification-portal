@@ -1,18 +1,12 @@
 import mongoose from 'mongoose';
 import { TaskStatus } from '../../src/config/const';
 import { ITask } from '../types/task';
-import BankVerificationForm, { BankVerificationFormDB_name } from './BankVerificationForm';
+import BankVerificationForm from './BankVerificationForm';
 import BusinessVerificationForm from './BusinessVerificationForm';
-import EmploymentVerificationForm, {
-	EmploymentVerificationFormDB_name,
-} from './EmploymentVerificationForm';
-import IncomeTaxVerificationForm, {
-	IncomeTaxVerificationFormDB_name,
-} from './IncomeTaxVerificationForm';
-import ResidenceVerificationForm, {
-	ResidenceVerificationFormDB_name,
-} from './ResidenceVerificationForm';
-import TeleVerificationForm, { TeleVerificationFormDB_name } from './TeleVerificationForm';
+import EmploymentVerificationForm from './EmploymentVerificationForm';
+import IncomeTaxVerificationForm from './IncomeTaxVerificationForm';
+import ResidenceVerificationForm from './ResidenceVerificationForm';
+import TeleVerificationForm from './TeleVerificationForm';
 import VerificationForm from './VerificationForm';
 
 const TaskSchema = new mongoose.Schema<ITask>(
@@ -57,31 +51,31 @@ const TaskSchema = new mongoose.Schema<ITask>(
 		},
 		verificationFormId: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: BankVerificationFormDB_name,
+			ref: 'BankVerificationForm',
 		},
 		teleVerificationId: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: TeleVerificationFormDB_name,
+			ref: 'TeleVerificationForm',
 		},
 		residenceVerificationId: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: ResidenceVerificationFormDB_name,
+			ref: 'ResidenceVerificationForm',
 		},
 		incomeVerificationId: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: IncomeTaxVerificationFormDB_name,
+			ref: 'IncomeTaxVerificationForm',
 		},
 		bankVerificationId: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: BankVerificationFormDB_name,
+			ref: 'BankVerificationForm',
 		},
 		employmentVerificationId: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: EmploymentVerificationFormDB_name,
+			ref: 'EmploymentVerificationForm',
 		},
 		businessVerificationId: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: BankVerificationFormDB_name,
+			ref: 'BankVerificationForm',
 		},
 	},
 	{ timestamps: true }

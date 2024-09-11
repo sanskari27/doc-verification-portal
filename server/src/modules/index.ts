@@ -11,7 +11,7 @@ const router = express.Router();
 
 // Next routes will be webhooks routes
 
-router.use('/sessions', SessionRoute);
+router.use('/auth', SessionRoute);
 router.use('/users', VerifySession, UsersRoute);
 
 router.post('/upload-media', async function (req, res, next) {

@@ -4,6 +4,7 @@ export interface IBankVerificationForm extends Document {
 	task_id: Types.ObjectId;
 	applicant: BankDetails;
 	coApplicant: BankDetails;
+	remarks: 'Recommended' | 'Not Recommended';
 }
 
 export interface BankDetails {

@@ -13,7 +13,7 @@ router
 
 router
 	.route('/agents/:id')
-	.post(IDValidator, VerifyMinLevel(UserLevel.Admin), Controller.removeAgent);
+	.delete(IDValidator, VerifyMinLevel(UserLevel.Admin), Controller.removeAgent);
 
 router
 	.route('/agents')
