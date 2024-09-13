@@ -1,8 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
+import { Path } from '../../config/const';
+import FileUpload, { ONLY_MEDIA_ALLOWED, SingleFileUploadOptions } from '../../config/FileUpload';
 import { CustomError, ERRORS } from '../../errors';
 import TaskService from '../../services/task/task';
 import AgentService from '../../services/user/agent';
 import { Respond } from '../../utils/ExpressUtils';
+import FileUtils from '../../utils/FileUtils';
 import {
 	AssignValidationResult,
 	CreateTaskValidationResult,
@@ -254,6 +257,61 @@ async function updateTaskStatus(req: Request, res: Response, next: NextFunction)
 	}
 }
 
+async function uploadAttachment(req: Request, res: Response, next: NextFunction) {
+	const taskId = req.locals.id;
+	const taskService = new TaskService(req.locals.user);
+
+	const fileUploadOptions: SingleFileUploadOptions = {
+		field_name: 'file',
+		options: {
+			fileFilter: ONLY_MEDIA_ALLOWED,
+		},
+	};
+	let uploadedFile;
+	try {
+		uploadedFile = await FileUpload.SingleFileUpload(req, res, fileUploadOptions);
+	} catch (err: unknown) {
+		return next(new CustomError(ERRORS.FILE_UPLOAD_ERROR, err));
+	}
+
+	try {
+		await taskService.uploadAttachment(taskId, uploadedFile.filename);
+
+		Respond({
+			res,
+			status: 200,
+		});
+	} catch (err) {
+		if (err instanceof CustomError) {
+			return next(err);
+		}
+		return next(new CustomError(ERRORS.INTERNAL_SERVER_ERROR));
+	}
+}
+
+async function deleteAttachment(req: Request, res: Response, next: NextFunction) {
+	const taskId = req.locals.id;
+	const attachmentName = req.locals.data as string;
+	const taskService = new TaskService(req.locals.user);
+
+	try {
+		await taskService.deleteAttachment(taskId, attachmentName);
+
+		const path = __basedir + Path.Misc + attachmentName;
+		FileUtils.deleteFile(path);
+
+		Respond({
+			res,
+			status: 200,
+		});
+	} catch (err) {
+		if (err instanceof CustomError) {
+			return next(err);
+		}
+		return next(new CustomError(ERRORS.INTERNAL_SERVER_ERROR));
+	}
+}
+
 const Controller = {
 	createTask,
 	updateTask,
@@ -265,6 +323,8 @@ const Controller = {
 	assignTask,
 	transferTask,
 	updateTaskStatus,
+	uploadAttachment,
+	deleteAttachment,
 };
 
 export default Controller;

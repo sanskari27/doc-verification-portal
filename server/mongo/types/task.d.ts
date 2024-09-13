@@ -20,5 +20,7 @@ export interface ITask extends Document {
 	employmentVerificationId: Types.ObjectId;
 	businessVerificationId: Types.ObjectId;
 
+	attachments: string[];
+
 	createdAt: Date;
 }

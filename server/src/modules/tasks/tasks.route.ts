@@ -5,6 +5,7 @@ import Controller from './tasks.controller';
 import {
 	AssignValidator,
 	CreateTaskValidator,
+	NameValidator,
 	TaskStatusValidator,
 	UpdateTaskValidator,
 } from './tasks.validator';
@@ -13,6 +14,11 @@ const router = express.Router();
 
 router.route('/assigned-to-me').get(Controller.assignedToMe);
 router.route('/assigned-by-me').get(Controller.assignedByMe);
+
+router
+	.route('/:id/attachment')
+	.post(IDValidator, Controller.uploadAttachment)
+	.delete(IDValidator, NameValidator, Controller.deleteAttachment);
 
 router.route('/:id/assign').post(IDValidator, AssignValidator, Controller.assignTask);
 router.route('/:id/transfer').post(IDValidator, AssignValidator, Controller.transferTask);

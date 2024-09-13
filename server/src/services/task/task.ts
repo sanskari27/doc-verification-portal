@@ -270,6 +270,7 @@ export default class TaskService {
 
 		return {
 			...processDocs(task),
+			attachments: task.attachments,
 
 			status: {
 				teleVerification: task.teleVerificationId
@@ -347,6 +348,32 @@ export default class TaskService {
 			assignedTo: assignTo,
 			level: managedByMe.level + 1,
 		});
+	}
+
+	public async uploadAttachment(taskId: Types.ObjectId, attachment: string) {
+		await TaskDB.updateOne(
+			{
+				_id: taskId,
+			},
+			{
+				$addToSet: {
+					attachments: attachment,
+				},
+			}
+		);
+	}
+
+	public async deleteAttachment(taskId: Types.ObjectId, attachment: string) {
+		await TaskDB.updateOne(
+			{
+				_id: taskId,
+			},
+			{
+				$pull: {
+					attachments: attachment,
+				},
+			}
+		);
 	}
 
 	public static async assignedBy(

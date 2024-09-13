@@ -206,3 +206,25 @@ export function TaskStatusValidator(req: Request, res: Response, next: NextFunct
 		})
 	);
 }
+
+export function NameValidator(req: Request, res: Response, next: NextFunction) {
+	const reqValidator = z.object({
+		name: z.string().trim().min(1),
+	});
+
+	const reqValidatorResult = reqValidator.safeParse(req.body);
+
+	if (reqValidatorResult.success) {
+		req.locals.data = reqValidatorResult.data.name;
+		return next();
+	}
+
+	return next(
+		new CustomError({
+			STATUS: 400,
+			TITLE: 'INVALID_FIELDS',
+			MESSAGE: "Invalid fields in the request's body.",
+			OBJECT: reqValidatorResult.error.flatten(),
+		})
+	);
+}

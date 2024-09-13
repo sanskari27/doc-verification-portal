@@ -78,6 +78,10 @@ const TaskSchema = new mongoose.Schema<ITask>(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'BankVerificationForm',
 		},
+		attachments: {
+			type: [String],
+			default: [],
+		},
 	},
 	{ timestamps: true }
 );
