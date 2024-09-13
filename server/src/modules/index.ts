@@ -1,38 +1,30 @@
 import express from 'express';
 import SessionRoute from './auth/auth.route';
+import TasksRoute from './tasks/tasks.route';
 import UsersRoute from './users/users.route';
 
-import FileUpload, { ONLY_MEDIA_ALLOWED, SingleFileUploadOptions } from '../config/FileUpload';
-import { CustomError, ERRORS } from '../errors';
+import { Path } from '../config/const';
 import { VerifySession } from '../middleware';
-import { Respond } from '../utils/ExpressUtils';
+import { RespondFile } from '../utils/ExpressUtils';
 
 const router = express.Router();
 
 // Next routes will be webhooks routes
 
-router.use('/sessions', SessionRoute);
+router.use('/auth', SessionRoute);
+router.use('/tasks', VerifySession, TasksRoute);
 router.use('/users', VerifySession, UsersRoute);
 
-router.post('/upload-media', async function (req, res, next) {
-	const fileUploadOptions: SingleFileUploadOptions = {
-		field_name: 'file',
-		options: {
-			fileFilter: ONLY_MEDIA_ALLOWED,
-		},
-	};
-
+router.get('/media/:filename', async function (req, res, next) {
 	try {
-		const uploadedFile = await FileUpload.SingleFileUpload(req, res, fileUploadOptions);
-		return Respond({
+		const path = __basedir + Path.Misc + req.params.filename;
+		return RespondFile({
 			res,
-			status: 200,
-			data: {
-				name: uploadedFile.filename,
-			},
+			filename: req.params.filename,
+			filepath: path,
 		});
 	} catch (err: unknown) {
-		return next(new CustomError(ERRORS.FILE_UPLOAD_ERROR, err));
+		return res.status(404).send('File not found');
 	}
 });
 

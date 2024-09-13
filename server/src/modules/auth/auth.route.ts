@@ -14,11 +14,15 @@ const router = express.Router();
 
 router.route('/validate-auth').all(VerifySession).get(Controller.validateAuth);
 
-router.route('/details').all(VerifySession).get(Controller.details).post(UpdateAccountValidator,Controller.updateDetails);
+router
+	.route('/details')
+	.all(VerifySession)
+	.get(Controller.details)
+	.post(UpdateAccountValidator, Controller.updateDetails);
 
 router
 	.route('/service-account/:id')
-	.all(VerifySession, VerifyMinLevel(UserLevel.Agent), IDValidator)
+	.all(VerifySession, VerifyMinLevel(UserLevel.Master), IDValidator)
 	.post(Controller.serviceAccount);
 
 router.route('/login').all(LoginAccountValidator).post(Controller.login);

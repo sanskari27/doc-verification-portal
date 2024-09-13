@@ -13,18 +13,14 @@ export default async function VerifySession(req: Request, res: Response, next: N
 
 	let session;
 
-	if (_auth_id) {
+	try {
+		const decoded = verify(_auth_id, JWT_SECRET) as JwtPayload;
+		session = await SessionService.findSessionById(decoded.id);
+	} catch (err) {
 		try {
-			const decoded = verify(_auth_id, JWT_SECRET) as JwtPayload;
-			session = await SessionService.findSessionById(decoded.id);
+			const decoded = verify(_refresh_id, REFRESH_SECRET) as JwtPayload;
+			session = await SessionService.findSessionByRefreshToken(decoded.id);
 		} catch (err) {}
-		if (!session && _refresh_id) {
-			try {
-				const decoded = verify(_refresh_id, REFRESH_SECRET) as JwtPayload;
-				session = await SessionService.findSessionByRefreshToken(decoded.id);
-				return next();
-			} catch (err) {}
-		}
 	}
 
 	if (!session) {

@@ -16,12 +16,12 @@ export default class MasterService extends AccountService {
 	}
 
 	async addAdmin(details: { email: string; name: string; phone: string }) {
-		const id = await AdminService.addAdmin({
+		const { id } = await AdminService.addAdmin({
 			...details,
 			parent: this.userId,
 		});
 		return {
-			id: id,
+			id,
 			email: details.email,
 			name: details.name,
 			phone: details.phone,
@@ -55,7 +55,7 @@ export default class MasterService extends AccountService {
 		});
 	}
 
-	async listTasks(
+	async assignedByMe(
 		query: Partial<{
 			date_range?: {
 				start: Date;
@@ -65,6 +65,6 @@ export default class MasterService extends AccountService {
 			status: TaskStatus;
 		}>
 	) {
-		return TaskService.getTasks(this.userId, query);
+		return TaskService.assignedBy(this.userId, query);
 	}
 }

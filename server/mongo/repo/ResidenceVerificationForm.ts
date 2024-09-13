@@ -8,7 +8,6 @@ import {
 	VehicleDetails,
 } from '../types/residenceVerificationForm';
 import { ContactedPersonSchema } from './VerificationForm';
-import { TaskDB_name } from './Task';
 
 const VehicleDetailsSchema = new mongoose.Schema<VehicleDetails>(
 	{
@@ -77,7 +76,7 @@ const NeighbourhoodObservationsSchema = new mongoose.Schema<NeighbourhoodObserva
 const ResidenceVerificationFormSchema = new mongoose.Schema<IResidenceVerificationForm>({
 	task_id: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: TaskDB_name,
+		ref: 'Task',
 		required: true,
 		unique: true,
 	},

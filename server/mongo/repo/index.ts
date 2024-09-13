@@ -7,5 +7,6 @@ export { default as ResidenceVerificationFormDB } from './ResidenceVerificationF
 export { default as SessionDB } from './Session';
 export { default as StorageDB } from './Storage';
 export { default as TaskDB } from './Task';
+export { default as TaskManagerDB } from './TaskManager';
 export { default as TeleVerificationFormDB } from './TeleVerificationForm';
 export { default as VerificationFormDB } from './VerificationForm';

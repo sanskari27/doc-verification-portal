@@ -4,6 +4,7 @@ export interface IIncomeTaxVerificationForm extends Document {
 	task_id: Types.ObjectId;
 	panNo: string;
 	financialRecords: IncomeTaxFinancialYear[];
+	remarks: 'Positive' | 'Negative';
 }
 
 export interface IncomeTaxFinancialYear {

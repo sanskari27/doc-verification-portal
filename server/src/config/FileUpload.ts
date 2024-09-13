@@ -100,14 +100,8 @@ const ONLY_MEDIA_ALLOWED = (
 	file: Express.Multer.File,
 	cb: multer.FileFilterCallback
 ) => {
-	if (
-		file.mimetype !== 'image/png' &&
-		file.mimetype !== 'image/webp' &&
-		file.mimetype !== 'image/jpg' &&
-		file.mimetype !== 'image/jpeg' &&
-		file.mimetype !== 'video/mp4'
-	) {
-		return cb(new Error('Only JPG, PNG, WEBP, MP4  images are allowed'));
+	if (file.mimetype !== 'image/*') {
+		return cb(new Error('Only images are allowed'));
 	}
 	cb(null, true);
 };

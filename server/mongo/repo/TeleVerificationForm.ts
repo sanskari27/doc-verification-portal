@@ -7,7 +7,6 @@ import {
 	TeleCallingLog,
 } from '../types/teleVerificationForm';
 import { ContactedPersonSchema } from './VerificationForm';
-import { TaskDB_name } from './Task';
 
 const BusinessDetailsSchema = new mongoose.Schema<BusinessDetails>(
 	{
@@ -100,7 +99,7 @@ const GuarantorSchema = new mongoose.Schema<Guarantor>({
 const TeleVerificationFormSchema = new mongoose.Schema<ITeleVerificationForm>({
 	task_id: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: TaskDB_name,
+		ref: 'Task',
 		required: true,
 		unique: true,
 	},
@@ -125,7 +124,6 @@ const TeleVerificationFormSchema = new mongoose.Schema<ITeleVerificationForm>({
 	verificationResult: {
 		type: String,
 		enum: ['Positive', 'Negative'],
-		default: 'Positive',
 	},
 });
 

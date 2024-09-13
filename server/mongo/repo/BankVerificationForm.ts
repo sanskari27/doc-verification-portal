@@ -31,6 +31,10 @@ const BankVerificationFormSchema = new mongoose.Schema<IBankVerificationForm>({
 	},
 	applicant: BankDetailsSchema,
 	coApplicant: BankDetailsSchema,
+	remarks: {
+		type: String,
+		enum: ['Recommended', 'Not Recommended'],
+	},
 });
 export const BankVerificationFormDB_name = 'BankVerificationForm';
 
