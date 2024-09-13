@@ -5,7 +5,7 @@ export const IS_WINDOWS = process.env.OS === 'WINDOWS';
 
 export const PORT = process.env.PORT as string;
 
-export const MASTER_KEY = process.env.MASTER_KEY as string
+export const MASTER_KEY = process.env.MASTER_KEY as string;
 
 export const JWT_SECRET = process.env.JWT_SECRET ?? 'jwt-secret';
 export const JWT_EXPIRE = process.env.JWT_EXPIRE ?? '3m';
@@ -41,9 +41,10 @@ export enum TaskStatus {
 	Pending = 'pending',
 	InProgress = 'in-progress',
 	Paused = 'paused',
+	AcceptedUnderReview = 'accepted-under-review',
+	RejectedUnderReview = 'rejected-under-review',
 	Completed = 'completed',
 	Rejected = 'rejected',
-	Closed = 'closed',
 }
 
 export const CACHE_TIMEOUT = 60 * 60; //seconds

@@ -11,6 +11,11 @@ const COMMON_ERRORS = {
 		TITLE: 'INVALID_FIELDS',
 		MESSAGE: 'The request contains invalid fields. Please try again later.',
 	},
+	INVALID_QUERY_PARAMS: {
+		STATUS: 400,
+		TITLE: 'INVALID_QUERY_PARAMS',
+		MESSAGE: 'The request contains invalid query parameters. Please try again later.',
+	},
 	NOT_FOUND: {
 		STATUS: 404,
 		TITLE: 'NOT_FOUND',

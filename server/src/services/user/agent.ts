@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { AccountDB } from '../../../mongo';
+import { AccountDB, TaskManagerDB } from '../../../mongo';
 import Task from '../../../mongo/repo/Task';
 import IAccount from '../../../mongo/types/account';
 import { TaskStatus, UserLevel } from '../../config/const';
@@ -64,7 +64,14 @@ export default class AgentService extends AccountService {
 			AccountDB.updateMany({ parent: current }, { disabled: true });
 		}
 
-		await Task.updateMany({ agentsInvolved: { $in: deleted } }, { status: TaskStatus.Paused });
+		const managedTasks = await TaskManagerDB.find({ assignedTo: { $in: deleted } });
+		const task_ids = managedTasks.reduce((acc, task) => {
+			acc.add(task.taskId.toString());
+			return acc;
+		}, new Set<string>());
+
+		await Task.updateMany({ _id: { $in: task_ids } }, { status: TaskStatus.Paused });
+		await TaskManagerDB.deleteMany({ assignedTo: { $in: deleted } });
 	}
 
 	static async listAgents({ parent }: { parent: Types.ObjectId }) {
@@ -96,7 +103,20 @@ export default class AgentService extends AccountService {
 		});
 	}
 
-	async listTasks(
+	async assignedByMe(
+		query: Partial<{
+			date_range?: {
+				start: Date;
+				end: Date;
+			};
+			priority: 'low' | 'medium' | 'high';
+			status: TaskStatus;
+		}>
+	) {
+		return TaskService.assignedBy(this.userId, query);
+	}
+
+	async assignedToMe(
 		query: Partial<{
 			date_range?: {
 				start: Date;

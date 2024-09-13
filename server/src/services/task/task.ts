@@ -78,6 +78,37 @@ export default class TaskService {
 		return updated.modifiedCount > 0;
 	}
 
+	public async updateTaskStatus(taskId: Types.ObjectId, status: TaskStatus) {
+		let managedByMe;
+		if (this._account.userLevel < UserLevel.Admin) {
+			managedByMe = await TaskManagerDB.findOne({
+				taskId,
+				assignedTo: this._account.userId,
+			});
+		} else {
+			managedByMe = await TaskManagerDB.findOne({
+				taskId,
+				assignedBy: this._account.userId,
+			});
+		}
+		if (!managedByMe) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
+
+		const task = await TaskDB.updateOne(
+			{
+				_id: taskId,
+			},
+			{
+				status: status,
+			}
+		);
+
+		if (task.modifiedCount <= 0) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
+	}
+
 	public async updateVerificationForm(
 		taskId: Types.ObjectId,
 		verificationForm: Partial<IVerificationForm>
@@ -241,58 +272,41 @@ export default class TaskService {
 			...processDocs(task),
 
 			status: {
-				teleVerification: task.teleVerificationId?.verificationResult ?? 'N/A',
-				residenceVerification: task.residenceVerificationId?.remarks ?? 'N/A',
-				incomeVerification: task.incomeVerificationId?.remarks ?? 'N/A',
-				bankVerification: task.bankVerificationId?.remarks ?? 'N/A',
-				employmentVerification: task.employmentVerificationId?.officeRemarks ?? 'N/A',
-				businessVerification: task.businessVerificationId?.recommended ?? 'N/A',
+				teleVerification: task.teleVerificationId
+					? task.teleVerificationId.verificationResult ?? 'N/A'
+					: undefined,
+				residenceVerification: task.residenceVerificationId
+					? task.residenceVerificationId.remarks ?? 'N/A'
+					: undefined,
+				incomeVerification: task.incomeVerificationId
+					? task.incomeVerificationId.remarks ?? 'N/A'
+					: undefined,
+				bankVerification: task.bankVerificationId
+					? task.bankVerificationId.remarks ?? 'N/A'
+					: undefined,
+				employmentVerification: task.employmentVerificationId
+					? task.employmentVerificationId.officeRemarks ?? 'N/A'
+					: undefined,
+				businessVerification: task.businessVerificationId
+					? task.businessVerificationId.recommended ?? 'N/A'
+					: undefined,
 			},
 		};
 	}
 
-	public async getVerificationForm(
-		type: 'bank' | 'business' | 'employment' | 'income' | 'residence' | 'tele',
-		formID: Types.ObjectId
-	) {
-		let verificationForm;
-
-		switch (type) {
-			case 'bank':
-				verificationForm = await BankVerificationFormDB.findById(formID);
-				break;
-			case 'business':
-				verificationForm = await BusinessVerificationFormDB.findById(formID);
-				break;
-			case 'employment':
-				verificationForm = await EmploymentVerificationFormDB.findById(formID);
-				break;
-			case 'income':
-				verificationForm = await IncomeVerificationFormDB.findById(formID);
-				break;
-			case 'residence':
-				verificationForm = await ResidenceVerificationFormDB.findById(formID);
-				break;
-			case 'tele':
-				verificationForm = await TeleVerificationFormDB.findById(formID);
-				break;
-			default:
-				throw new CustomError(ERRORS.INVALID_FIELDS);
-		}
-
-		if (verificationForm) {
-			return verificationForm;
-		}
-
-		throw new CustomError(ERRORS.NOT_FOUND);
-	}
-
 	public async assignTask(taskId: Types.ObjectId, assignTo: Types.ObjectId) {
-		const managedByMe = await TaskManagerDB.findOne({
-			taskId,
-			assignedBy: this._account.userId,
-		});
-
+		let managedByMe;
+		if (this._account.userLevel < UserLevel.Admin) {
+			managedByMe = await TaskManagerDB.findOne({
+				taskId,
+				assignedTo: this._account.userId,
+			});
+		} else {
+			managedByMe = await TaskManagerDB.findOne({
+				taskId,
+				assignedBy: this._account.userId,
+			});
+		}
 		if (!managedByMe) {
 			throw new CustomError(ERRORS.NOT_FOUND);
 		}
@@ -306,11 +320,18 @@ export default class TaskService {
 	}
 
 	public async transferTask(taskId: Types.ObjectId, assignTo: Types.ObjectId) {
-		const managedByMe = await TaskManagerDB.findOne({
-			taskId,
-			assignedBy: this._account.userId,
-		});
-
+		let managedByMe;
+		if (this._account.userLevel < UserLevel.Admin) {
+			managedByMe = await TaskManagerDB.findOne({
+				taskId,
+				assignedTo: this._account.userId,
+			});
+		} else {
+			managedByMe = await TaskManagerDB.findOne({
+				taskId,
+				assignedBy: this._account.userId,
+			});
+		}
 		if (!managedByMe) {
 			throw new CustomError(ERRORS.NOT_FOUND);
 		}
@@ -382,12 +403,24 @@ export default class TaskService {
 				...processDocs(record),
 				assignedTo: assignedTo,
 				status: {
-					teleVerification: record.teleVerificationId?.verificationResult ?? 'N/A',
-					residenceVerification: record.residenceVerificationId?.remarks ?? 'N/A',
-					incomeVerification: record.incomeVerificationId?.remarks ?? 'N/A',
-					bankVerification: record.bankVerificationId?.remarks ?? 'N/A',
-					employmentVerification: record.employmentVerificationId?.officeRemarks ?? 'N/A',
-					businessVerification: record.businessVerificationId?.recommended ?? 'N/A',
+					teleVerification: record.teleVerificationId
+						? record.teleVerificationId.verificationResult ?? 'N/A'
+						: undefined,
+					residenceVerification: record.residenceVerificationId
+						? record.residenceVerificationId.remarks ?? 'N/A'
+						: undefined,
+					incomeVerification: record.incomeVerificationId
+						? record.incomeVerificationId.remarks ?? 'N/A'
+						: undefined,
+					bankVerification: record.bankVerificationId
+						? record.bankVerificationId.remarks ?? 'N/A'
+						: undefined,
+					employmentVerification: record.employmentVerificationId
+						? record.employmentVerificationId.officeRemarks ?? 'N/A'
+						: undefined,
+					businessVerification: record.businessVerificationId
+						? record.businessVerificationId.recommended ?? 'N/A'
+						: undefined,
 				},
 			};
 		});
@@ -447,12 +480,24 @@ export default class TaskService {
 				...processDocs(record),
 				assignedBy: assignedBy,
 				status: {
-					teleVerification: record.teleVerificationId?.verificationResult ?? 'N/A',
-					residenceVerification: record.residenceVerificationId?.remarks ?? 'N/A',
-					incomeVerification: record.incomeVerificationId?.remarks ?? 'N/A',
-					bankVerification: record.bankVerificationId?.remarks ?? 'N/A',
-					employmentVerification: record.employmentVerificationId?.officeRemarks ?? 'N/A',
-					businessVerification: record.businessVerificationId?.recommended ?? 'N/A',
+					teleVerification: record.teleVerificationId
+						? record.teleVerificationId.verificationResult ?? 'N/A'
+						: undefined,
+					residenceVerification: record.residenceVerificationId
+						? record.residenceVerificationId.remarks ?? 'N/A'
+						: undefined,
+					incomeVerification: record.incomeVerificationId
+						? record.incomeVerificationId.remarks ?? 'N/A'
+						: undefined,
+					bankVerification: record.bankVerificationId
+						? record.bankVerificationId.remarks ?? 'N/A'
+						: undefined,
+					employmentVerification: record.employmentVerificationId
+						? record.employmentVerificationId.officeRemarks ?? 'N/A'
+						: undefined,
+					businessVerification: record.businessVerificationId
+						? record.businessVerificationId.recommended ?? 'N/A'
+						: undefined,
 				},
 			};
 		});
@@ -464,6 +509,7 @@ function processDocs(doc: any): {
 	title: string;
 	description?: string;
 	priority: 'low' | 'medium' | 'high';
+	verificationType: 'business' | 'non-business' | 'nri';
 	dueDate: string;
 	relativeDate: string;
 	createdAt: string;
@@ -475,6 +521,7 @@ function processDocs(doc: any): {
 		title: doc.title as string,
 		description: doc.description as string,
 		priority: doc.priority as 'low' | 'medium' | 'high',
+		verificationType: doc.verificationType as 'business' | 'non-business' | 'nri',
 		createdAt: DateUtils.getMoment(doc.createdAt).format('MMM Do, YYYY hh:mm A'),
 		dueDate: DateUtils.getMoment(doc.dueDate).format('MMM Do, YYYY hh:mm A'),
 		relativeDate: DateUtils.getMoment(doc.dueDate).fromNow(),

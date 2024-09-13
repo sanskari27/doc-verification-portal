@@ -70,7 +70,7 @@ export default class AdminService extends AccountService {
 		});
 	}
 
-	async listTasks(
+	async assignedByMe(
 		query: Partial<{
 			date_range?: {
 				start: Date;
@@ -80,6 +80,6 @@ export default class AdminService extends AccountService {
 			status: TaskStatus;
 		}>
 	) {
-		return TaskService.assignedTo(this.userId, query);
+		return TaskService.assignedBy(this.userId, query);
 	}
 }

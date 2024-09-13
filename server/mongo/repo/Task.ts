@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { TaskStatus } from '../../src/config/const';
+import DateUtils from '../../src/utils/DateUtils';
 import { ITask } from '../types/task';
 import BankVerificationForm from './BankVerificationForm';
 import BusinessVerificationForm from './BusinessVerificationForm';
@@ -137,6 +138,11 @@ TaskSchema.pre('save', async function (next) {
 			})
 		)._id;
 	}
+
+	if (this.status === TaskStatus.Completed) {
+		this.completedAt = DateUtils.getMomentNow().toDate();
+	}
+	next();
 });
 
 export const TaskDB_name = 'Task';
