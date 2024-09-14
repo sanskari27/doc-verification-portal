@@ -29,7 +29,12 @@ router.route('/:id/status').post(IDValidator, TaskStatusValidator, Controller.up
 router
 	.route('/:id/verification-forms')
 	.get(IDValidator, Controller.getFormData)
-	.post(IDValidator, VerificationFormDataValidator, Controller.updateFormData);
+	.post(
+		IDValidator,
+		VerifyMinLevel(UserLevel.Admin),
+		VerificationFormDataValidator,
+		Controller.updateFormData
+	);
 
 router.route('/:id/navigation-link').get(IDValidator, Controller.getNavigationLink);
 

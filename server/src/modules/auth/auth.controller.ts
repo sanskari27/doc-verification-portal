@@ -172,7 +172,9 @@ async function register(req: Request, res: Response, next: NextFunction) {
 			status: 200,
 			data: {
 				isAdmin: userService.userLevel === UserLevel.Admin,
-				isAgent: userService.userLevel === UserLevel.Agent,
+				isAgent:
+					userService.userLevel === UserLevel.Agent ||
+					userService.userLevel === UserLevel.DummyAgent,
 				isMaster: userService.userLevel === UserLevel.Master,
 			},
 		});
@@ -188,7 +190,7 @@ async function validateAuth(req: Request, res: Response, next: NextFunction) {
 		status: 200,
 		data: {
 			isAdmin: user.userLevel === UserLevel.Admin,
-			isAgent: user.userLevel === UserLevel.Agent,
+			isAgent: user.userLevel === UserLevel.Agent || user.userLevel === UserLevel.DummyAgent,
 			isMaster: user.userLevel === UserLevel.Master,
 		},
 	});
