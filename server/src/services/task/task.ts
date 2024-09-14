@@ -115,12 +115,14 @@ export default class TaskService {
 		const { task_id: _, ...data } = verificationForm;
 		const verificationFormData = filterUndefinedKeys(data);
 		const updated = await VerificationFormDB.updateOne({ task_id: taskId }, verificationFormData);
-		return updated.modifiedCount > 0;
+		if (updated.modifiedCount === 0) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
 	}
 
 	public async updateResidenceVerificationForm(
 		taskId: Types.ObjectId,
-		verificationForm: Partial<IVerificationForm>
+		verificationForm: Partial<IResidenceVerificationForm>
 	) {
 		const { task_id: _, ...data } = verificationForm;
 		const verificationFormData = filterUndefinedKeys(data);
@@ -128,12 +130,14 @@ export default class TaskService {
 			{ task_id: taskId },
 			verificationFormData
 		);
-		return updated.modifiedCount > 0;
+		if (updated.modifiedCount === 0) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
 	}
 
 	public async updateTeleVerificationForm(
 		taskId: Types.ObjectId,
-		verificationForm: Partial<IVerificationForm>
+		verificationForm: Partial<ITeleVerificationForm>
 	) {
 		const { task_id: _, ...data } = verificationForm;
 		const verificationFormData = filterUndefinedKeys(data);
@@ -141,12 +145,14 @@ export default class TaskService {
 			{ task_id: taskId },
 			verificationFormData
 		);
-		return updated.modifiedCount > 0;
+		if (updated.modifiedCount === 0) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
 	}
 
 	public async updateBusinessVerificationForm(
 		taskId: Types.ObjectId,
-		verificationForm: Partial<IVerificationForm>
+		verificationForm: Partial<IBusinessVerificationForm>
 	) {
 		const { task_id: _, ...data } = verificationForm;
 		const verificationFormData = filterUndefinedKeys(data);
@@ -154,12 +160,14 @@ export default class TaskService {
 			{ task_id: taskId },
 			verificationFormData
 		);
-		return updated.modifiedCount > 0;
+		if (updated.modifiedCount === 0) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
 	}
 
 	public async updateEmploymentVerificationForm(
 		taskId: Types.ObjectId,
-		verificationForm: Partial<IVerificationForm>
+		verificationForm: Partial<IEmploymentVerificationForm>
 	) {
 		const { task_id: _, ...data } = verificationForm;
 		const verificationFormData = filterUndefinedKeys(data);
@@ -167,12 +175,14 @@ export default class TaskService {
 			{ task_id: taskId },
 			verificationFormData
 		);
-		return updated.modifiedCount > 0;
+		if (updated.modifiedCount === 0) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
 	}
 
 	public async updateBankVerificationForm(
 		taskId: Types.ObjectId,
-		verificationForm: Partial<IVerificationForm>
+		verificationForm: Partial<IBankVerificationForm>
 	) {
 		const { task_id: _, ...data } = verificationForm;
 		const verificationFormData = filterUndefinedKeys(data);
@@ -180,12 +190,14 @@ export default class TaskService {
 			{ task_id: taskId },
 			verificationFormData
 		);
-		return updated.modifiedCount > 0;
+		if (updated.modifiedCount === 0) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
 	}
 
 	public async updateIncomeTaxVerificationForm(
 		taskId: Types.ObjectId,
-		verificationForm: Partial<IVerificationForm>
+		verificationForm: Partial<IIncomeTaxVerificationForm>
 	) {
 		const { task_id: _, ...data } = verificationForm;
 		const verificationFormData = filterUndefinedKeys(data);
@@ -193,7 +205,9 @@ export default class TaskService {
 			{ task_id: taskId },
 			verificationFormData
 		);
-		return updated.modifiedCount > 0;
+		if (updated.modifiedCount === 0) {
+			throw new CustomError(ERRORS.NOT_FOUND);
+		}
 	}
 
 	public async fetchFormData(
@@ -400,7 +414,7 @@ export default class TaskService {
 			$and: [
 				{
 					...(query.date_range && {
-						due_date: {
+						dueDate: {
 							$gte: query.date_range.start,
 							$lte: query.date_range.end,
 						},
@@ -421,7 +435,7 @@ export default class TaskService {
 			}>(
 				'verificationFormId teleVerificationId residenceVerificationId incomeVerificationId bankVerificationId employmentVerificationId businessVerificationId'
 			)
-			.sort({ due_date: 1 });
+			.sort({ dueDate: 1 });
 
 		return records.map((record) => {
 			const assignedTo = taskIds[record._id.toString()];
@@ -477,7 +491,7 @@ export default class TaskService {
 			$and: [
 				{
 					...(query.date_range && {
-						due_date: {
+						dueDate: {
 							$gte: query.date_range.start,
 							$lte: query.date_range.end,
 						},
@@ -498,7 +512,7 @@ export default class TaskService {
 			}>(
 				'verificationFormId teleVerificationId residenceVerificationId incomeVerificationId bankVerificationId employmentVerificationId businessVerificationId'
 			)
-			.sort({ due_date: 1 });
+			.sort({ dueDate: 1 });
 
 		return records.map((record) => {
 			const assignedBy = taskIds[record._id.toString()];
@@ -554,7 +568,7 @@ function processDocs(doc: any): {
 		status: doc.status,
 		isOverdue:
 			doc.status === 'completed'
-				? DateUtils.getMoment(doc.due_date).isBefore(doc.completedAt)
-				: DateUtils.getMoment(doc.due_date).isBefore(DateUtils.getMomentNow()),
+				? DateUtils.getMoment(doc.dueDate).isBefore(doc.completedAt)
+				: DateUtils.getMoment(doc.dueDate).isBefore(DateUtils.getMomentNow()),
 	};
 }

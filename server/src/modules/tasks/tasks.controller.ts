@@ -12,6 +12,7 @@ import {
 	FetchQueryType,
 	TaskStatusValidationResult,
 	UpdateTaskValidationResult,
+	VerificationDataResult,
 } from './tasks.validator';
 
 export const JWT_EXPIRE_TIME = 3 * 60 * 1000;
@@ -197,6 +198,50 @@ async function getFormData(req: Request, res: Response, next: NextFunction) {
 	}
 }
 
+async function updateFormData(req: Request, res: Response, next: NextFunction) {
+	const id = req.locals.id;
+	const taskService = new TaskService(req.locals.user);
+	const data = req.locals.data as VerificationDataResult;
+
+	try {
+		switch (data.type) {
+			case 'verification-form':
+				await taskService.updateVerificationForm(id, data);
+				break;
+			case 'business-verification':
+				await taskService.updateBusinessVerificationForm(id, data);
+				break;
+			case 'bank-verification':
+				await taskService.updateBankVerificationForm(id, data);
+				break;
+			case 'employment-verification':
+				await taskService.updateEmploymentVerificationForm(id, data);
+				break;
+			case 'income-tax-verification':
+				await taskService.updateIncomeTaxVerificationForm(id, data);
+				break;
+			case 'residence-verification':
+				await taskService.updateResidenceVerificationForm(id, data);
+				break;
+			case 'tele-verification':
+				await taskService.updateTeleVerificationForm(id, data);
+				break;
+			default:
+				return next(new CustomError(ERRORS.INVALID_FIELDS));
+		}
+
+		Respond({
+			res,
+			status: 200,
+		});
+	} catch (err: unknown) {
+		if (err instanceof CustomError) {
+			return next(err);
+		}
+		return next(new CustomError(ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
+}
+
 async function assignTask(req: Request, res: Response, next: NextFunction) {
 	const taskId = req.locals.id;
 	const { agentId } = req.locals.data as AssignValidationResult;
@@ -320,6 +365,7 @@ const Controller = {
 	assignedByMe,
 	getNavigationLink,
 	getFormData,
+	updateFormData,
 	assignTask,
 	transferTask,
 	updateTaskStatus,

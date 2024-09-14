@@ -59,7 +59,7 @@ const ResidenceExteriorsSchema = new mongoose.Schema<ResidenceExteriors>(
 	{ _id: false }
 );
 
-const NeighbourhoodObservationsSchema = new mongoose.Schema<NeighborhoodObservations>(
+const neighborhoodObservationsSchema = new mongoose.Schema<NeighborhoodObservations>(
 	{
 		staysInResidence: Boolean,
 		availability: String,
@@ -117,11 +117,11 @@ const ResidenceVerificationFormSchema = new mongoose.Schema<IResidenceVerificati
 		type: String,
 		enum: ['Polite', 'Rude', 'Aggressive', 'Cooperative', 'Uncooperative'],
 	},
-	neighbourhood: {
+	neighborhood: {
 		type: String,
 		enum: ['Positve', 'Negative', 'Neutral'],
 	},
-	neighbourhoodContacted: {
+	neighborhoodContacted: {
 		type: [String],
 	},
 	interiors: ResidenceInteriorsSchema,
@@ -136,7 +136,7 @@ const ResidenceVerificationFormSchema = new mongoose.Schema<IResidenceVerificati
 		type: String,
 		enum: ['Positive', 'Negative'],
 	},
-	neighbourhoodObservations: NeighbourhoodObservationsSchema,
+	neighborhoodObservations: neighborhoodObservationsSchema,
 });
 
 export const ResidenceVerificationFormDB_name = 'ResidenceVerificationForm';

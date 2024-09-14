@@ -8,6 +8,7 @@ import {
 	NameValidator,
 	TaskStatusValidator,
 	UpdateTaskValidator,
+	VerificationFormDataValidator,
 } from './tasks.validator';
 
 const router = express.Router();
@@ -25,7 +26,11 @@ router.route('/:id/transfer').post(IDValidator, AssignValidator, Controller.tran
 
 router.route('/:id/status').post(IDValidator, TaskStatusValidator, Controller.updateTaskStatus);
 
-router.route('/:id/verification-forms').get(IDValidator, Controller.getFormData);
+router
+	.route('/:id/verification-forms')
+	.get(IDValidator, Controller.getFormData)
+	.post(IDValidator, VerificationFormDataValidator, Controller.updateFormData);
+
 router.route('/:id/navigation-link').get(IDValidator, Controller.getNavigationLink);
 
 router
