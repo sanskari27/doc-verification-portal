@@ -14,6 +14,38 @@ export {
 	VerificationFormDB,
 } from './repo';
 
+export type {
+	BankDetails,
+	BusinessDetails,
+	BusinessInteriors,
+	ContactedPerson,
+	EmploymentDetails,
+	EmploymentInteriors,
+	FinanceDetails,
+	Guarantor,
+	IAccount,
+	IBankVerificationForm,
+	IBusinessVerificationForm,
+	IEmploymentVerificationForm,
+	IIncomeTaxVerificationForm,
+	IResidenceVerificationForm,
+	ISession,
+	IStorage,
+	ITask,
+	ITaskManager,
+	ITeleVerificationForm,
+	IVerificationForm,
+	IncomeTaxFinancialYear,
+	IncomeTaxRecord,
+	MaritalStatus,
+	NeighborhoodObservations,
+	ResidenceExteriors,
+	ResidenceInteriors,
+	SalaryDetails,
+	TeleCalling,
+	TeleCallingLog,
+} from './types';
+
 export default function connectDB(database_url: string) {
 	return new Promise((resolve, reject) => {
 		mongoose.set('strict', false);

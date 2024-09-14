@@ -1,6 +1,5 @@
 import { Types } from 'mongoose';
-import { AccountDB } from '../../../mongo';
-import IAccount from '../../../mongo/types/account';
+import { AccountDB, IAccount } from '../../../mongo';
 import { TaskStatus, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
 import { generateText } from '../../utils/ExpressUtils';
@@ -10,7 +9,7 @@ import AgentService from './agent';
 
 export default class AdminService extends AccountService {
 	public constructor(account: IAccount) {
-		if (account.userLevel !== UserLevel.Master) {
+		if (account.userLevel !== UserLevel.Admin) {
 			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
 		}
 		super(account);

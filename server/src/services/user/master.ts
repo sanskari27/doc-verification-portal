@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import IAccount from '../../../mongo/types/account';
+import { IAccount } from '../../../mongo';
 import { TaskStatus, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
 import AccountService from '../auth/account';

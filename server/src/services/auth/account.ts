@@ -1,7 +1,6 @@
 import { randomBytes } from 'crypto';
 import { Types } from 'mongoose';
-import { AccountDB, SessionDB, StorageDB } from '../../../mongo';
-import IAccount from '../../../mongo/types/account';
+import { AccountDB, SessionDB, StorageDB, IAccount } from '../../../mongo';
 import { UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
 import { sendLoginCredentialsEmail } from '../../provider/email';

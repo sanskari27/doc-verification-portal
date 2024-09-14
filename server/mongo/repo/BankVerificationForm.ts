@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { BankDetails, IBankVerificationForm } from '../types/bankVerificationForm';
+import { BankDetails, IBankVerificationForm } from '..';
 import { TaskDB_name } from './Task';
 
 const BankDetailsSchema = new mongoose.Schema<BankDetails>(

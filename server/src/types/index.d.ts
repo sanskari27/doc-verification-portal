@@ -1,7 +1,7 @@
 /* eslint-disable no-var */
 
 import { Types } from 'mongoose';
-import IAccount from '../../mongo/types/account';
+import { IAccount } from '../../mongo';
 import AdminService from '../services/user/admin';
 import AgentService from '../services/user/agent';
 import MasterService from '../services/user/master';

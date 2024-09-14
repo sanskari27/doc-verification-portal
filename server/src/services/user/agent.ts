@@ -1,7 +1,5 @@
 import { Types } from 'mongoose';
-import { AccountDB, TaskManagerDB } from '../../../mongo';
-import Task from '../../../mongo/repo/Task';
-import IAccount from '../../../mongo/types/account';
+import { AccountDB, IAccount, TaskDB, TaskManagerDB } from '../../../mongo';
 import { TaskStatus, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
 import { generateText } from '../../utils/ExpressUtils';
@@ -10,7 +8,7 @@ import TaskService from '../task/task';
 
 export default class AgentService extends AccountService {
 	public constructor(account: IAccount) {
-		if (account.userLevel !== UserLevel.Master) {
+		if (account.userLevel !== UserLevel.Agent) {
 			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
 		}
 		super(account);
@@ -70,7 +68,7 @@ export default class AgentService extends AccountService {
 			return acc;
 		}, new Set<string>());
 
-		await Task.updateMany({ _id: { $in: task_ids } }, { status: TaskStatus.Paused });
+		await TaskDB.updateMany({ _id: { $in: task_ids } }, { status: TaskStatus.Paused });
 		await TaskManagerDB.deleteMany({ assignedTo: { $in: deleted } });
 	}
 
