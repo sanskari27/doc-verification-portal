@@ -13,11 +13,8 @@ router
 
 router
 	.route('/agents/:id')
-	.delete(IDValidator, VerifyMinLevel(UserLevel.Admin), Controller.removeAgent);
+	.delete(IDValidator, Controller.removeAgent);
 
-router
-	.route('/agents')
-	.get(Controller.listAgents)
-	.post(VerifyMinLevel(UserLevel.Admin), CreateUserValidator, Controller.addAgent);
+router.route('/agents').get(Controller.listAgents).post(CreateUserValidator, Controller.addAgent);
 
 export default router;
