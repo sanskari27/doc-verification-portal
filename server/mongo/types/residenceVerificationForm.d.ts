@@ -20,8 +20,8 @@ export interface IResidenceVerificationForm extends Document {
 	vehicleDetails: VehicleDetails;
 	financeDetails: FinanceDetails;
 	nature: 'Polite' | 'Rude' | 'Aggressive' | 'Cooperative' | 'Uncooperative';
-	neighbourhood: 'Positve' | 'Negative' | 'Neutral';
-	neighbourhoodContacted: string[];
+	neighborhood: 'Positive' | 'Negative' | 'Neutral';
+	neighborhoodContacted: string[];
 
 	interiors: ResidenceInteriors;
 	exterior: ResidenceExteriors;
@@ -29,7 +29,7 @@ export interface IResidenceVerificationForm extends Document {
 	politicalPictures: string;
 	livingStandard: 'High' | 'Medium' | 'Low';
 	remarks: 'Positive' | 'Negative';
-	neighbourhoodObservations: NeighborhoodObservations;
+	neighborhoodObservations: NeighborhoodObservations;
 }
 
 export interface ContactedPerson {
