@@ -3,22 +3,21 @@ import {
 	BankVerificationFormDB,
 	BusinessVerificationFormDB,
 	EmploymentVerificationFormDB,
+	IAccount,
+	IBankVerificationForm,
+	IBusinessVerificationForm,
+	IEmploymentVerificationForm,
+	IIncomeTaxVerificationForm,
 	IncomeVerificationFormDB,
+	IResidenceVerificationForm,
+	ITeleVerificationForm,
+	IVerificationForm,
 	ResidenceVerificationFormDB,
 	TaskDB,
 	TaskManagerDB,
 	TeleVerificationFormDB,
 	VerificationFormDB,
 } from '../../../mongo';
-import VerificationForm from '../../../mongo/repo/VerificationForm';
-import IAccount from '../../../mongo/types/account';
-import { IBankVerificationForm } from '../../../mongo/types/bankVerificationForm';
-import { IBusinessVerificationForm } from '../../../mongo/types/businessVerificationForm';
-import { IEmploymentVerificationForm } from '../../../mongo/types/employmentVerificationForm';
-import { IIncomeTaxVerificationForm } from '../../../mongo/types/incomeTaxVerificationForm';
-import { IResidenceVerificationForm } from '../../../mongo/types/residenceVerificationForm';
-import { ITeleVerificationForm } from '../../../mongo/types/teleVerificationForm';
-import { IVerificationForm } from '../../../mongo/types/verificationForm';
 import { TaskStatus, UserLevel } from '../../config/const';
 import { CustomError, ERRORS } from '../../errors';
 import { IDType } from '../../types';
@@ -115,7 +114,7 @@ export default class TaskService {
 	) {
 		const { task_id: _, ...data } = verificationForm;
 		const verificationFormData = filterUndefinedKeys(data);
-		const updated = await VerificationForm.updateOne({ task_id: taskId }, verificationFormData);
+		const updated = await VerificationFormDB.updateOne({ task_id: taskId }, verificationFormData);
 		return updated.modifiedCount > 0;
 	}
 

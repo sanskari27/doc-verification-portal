@@ -1,4 +1,4 @@
-import IAccount from '../../../mongo/types/account';
+import { IAccount } from '../../../mongo';
 import { UserLevel } from '../../config/const';
 import AdminService from './admin';
 import AgentService from './agent';

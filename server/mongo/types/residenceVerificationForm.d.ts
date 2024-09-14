@@ -29,7 +29,7 @@ export interface IResidenceVerificationForm extends Document {
 	politicalPictures: string;
 	livingStandard: 'High' | 'Medium' | 'Low';
 	remarks: 'Positive' | 'Negative';
-	neighbourhoodObservations: NeighbourhoodObservations;
+	neighbourhoodObservations: NeighborhoodObservations;
 }
 
 export interface ContactedPerson {
@@ -82,7 +82,7 @@ export interface ResidenceExteriors {
 	airConditioner: boolean;
 }
 
-export interface NeighbourhoodObservations {
+export interface NeighborhoodObservations {
 	staysInResidence: boolean;
 	availability: string;
 	averageAge: number;

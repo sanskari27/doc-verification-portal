@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import {
 	FinanceDetails,
 	IResidenceVerificationForm,
-	NeighbourhoodObservations,
+	NeighborhoodObservations,
 	ResidenceExteriors,
 	ResidenceInteriors,
 	VehicleDetails,
@@ -59,7 +59,7 @@ const ResidenceExteriorsSchema = new mongoose.Schema<ResidenceExteriors>(
 	{ _id: false }
 );
 
-const NeighbourhoodObservationsSchema = new mongoose.Schema<NeighbourhoodObservations>(
+const NeighbourhoodObservationsSchema = new mongoose.Schema<NeighborhoodObservations>(
 	{
 		staysInResidence: Boolean,
 		availability: String,

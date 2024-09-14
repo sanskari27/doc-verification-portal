@@ -1,5 +1,4 @@
-import { SessionDB } from '../../../mongo';
-import ISession from '../../../mongo/types/session';
+import { SessionDB, ISession } from '../../../mongo';
 import { CustomError, ERRORS } from '../../errors';
 import { IDType } from '../../types';
 
