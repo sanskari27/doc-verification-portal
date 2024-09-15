@@ -8,7 +8,7 @@ import TaskService from '../task/task';
 
 export default class AgentService extends AccountService {
 	public constructor(account: IAccount) {
-		if (account.userLevel !== UserLevel.Agent) {
+		if (account.userLevel !== UserLevel.Agent && account.userLevel !== UserLevel.DummyAgent) {
 			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
 		}
 		super(account);
@@ -74,7 +74,7 @@ export default class AgentService extends AccountService {
 
 	static async listAgents({ parent }: { parent: Types.ObjectId }) {
 		const admins = await AccountDB.find({
-			userLevel: UserLevel.Agent,
+			userLevel: { $in: [UserLevel.Agent, UserLevel.DummyAgent] },
 			parent: parent,
 			disabled: false,
 		});

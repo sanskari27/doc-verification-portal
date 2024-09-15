@@ -57,9 +57,6 @@ async function addAgent(req: Request, res: Response, next: NextFunction) {
 	const data = req.locals.data as CreateUserValidationResult;
 	const userService = req.locals.user;
 
-	if (!(userService instanceof MasterService) && !(userService instanceof AdminService)) {
-		return next(new CustomError(ERRORS.PERMISSION_DENIED));
-	}
 	try {
 		const agent = await userService.addAgent(data);
 		Respond({
