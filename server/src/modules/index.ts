@@ -1,5 +1,6 @@
 import express from 'express';
 import SessionRoute from './auth/auth.route';
+import ReportRoute from './report/report.route';
 import TasksRoute from './tasks/tasks.route';
 import UsersRoute from './users/users.route';
 
@@ -12,6 +13,7 @@ const router = express.Router();
 // Next routes will be webhooks routes
 
 router.use('/auth', SessionRoute);
+router.use('/report', VerifySession, ReportRoute);
 router.use('/tasks', VerifySession, TasksRoute);
 router.use('/users', VerifySession, UsersRoute);
 

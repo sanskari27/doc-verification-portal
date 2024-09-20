@@ -10,6 +10,7 @@ import {
 	IIncomeTaxVerificationForm,
 	IncomeVerificationFormDB,
 	IResidenceVerificationForm,
+	ITaskManager,
 	ITeleVerificationForm,
 	IVerificationForm,
 	ResidenceVerificationFormDB,
@@ -45,7 +46,7 @@ export default class TaskService {
 			throw new CustomError(ERRORS.PERMISSION_DENIED);
 		}
 
-		const task = await TaskDB.create(details);
+		const task = await TaskDB.create({ ...details, kyc1: details.assignedTo });
 		await TaskManagerDB.create({
 			taskId: task._id,
 			assignedBy: this._account.userId,
@@ -284,31 +285,14 @@ export default class TaskService {
 		return {
 			...processDocs(task),
 			attachments: task.attachments,
-
-			status: {
-				teleVerification: task.teleVerificationId
-					? task.teleVerificationId.verificationResult ?? 'N/A'
-					: undefined,
-				residenceVerification: task.residenceVerificationId
-					? task.residenceVerificationId.remarks ?? 'N/A'
-					: undefined,
-				incomeVerification: task.incomeVerificationId
-					? task.incomeVerificationId.remarks ?? 'N/A'
-					: undefined,
-				bankVerification: task.bankVerificationId
-					? task.bankVerificationId.remarks ?? 'N/A'
-					: undefined,
-				employmentVerification: task.employmentVerificationId
-					? task.employmentVerificationId.officeRemarks ?? 'N/A'
-					: undefined,
-				businessVerification: task.businessVerificationId
-					? task.businessVerificationId.recommended ?? 'N/A'
-					: undefined,
-			},
 		};
 	}
 
-	public async assignTask(taskId: Types.ObjectId, assignTo: Types.ObjectId) {
+	public async assignTask(
+		taskId: Types.ObjectId,
+		assignTo: Types.ObjectId,
+		opts: { reKyc?: boolean } = {}
+	) {
 		let managedByMe;
 		if (this._account.userLevel < UserLevel.Admin) {
 			managedByMe = await TaskManagerDB.findOne({
@@ -331,6 +315,25 @@ export default class TaskService {
 			assignedTo: assignTo,
 			level: managedByMe.level + 1,
 		});
+
+		if (opts.reKyc) {
+			const task = await TaskDB.findById(taskId);
+			if (!task) {
+				throw new CustomError(ERRORS.NOT_FOUND);
+			} else if (!task.kyc1) {
+				task.kyc1 = assignTo;
+			} else if (!task.kyc2) {
+				task.kyc2 = assignTo;
+			} else if (!task.kyc3) {
+				task.kyc3 = assignTo;
+			} else if (!task.kyc4) {
+				task.kyc4 = assignTo;
+			} else if (!task.kyc5) {
+				task.kyc5 = assignTo;
+			} else {
+				throw new CustomError(ERRORS.INVALID_FIELDS);
+			}
+		}
 	}
 
 	public async transferTask(taskId: Types.ObjectId, assignTo: Types.ObjectId) {
@@ -374,6 +377,139 @@ export default class TaskService {
 				},
 			}
 		);
+	}
+
+	public async generateReport(
+		query: Partial<{
+			date_range?: {
+				start: Date;
+				end: Date;
+			};
+			priority: 'low' | 'medium' | 'high';
+			status: TaskStatus;
+			masterAccess: boolean;
+		}> = {}
+	): Promise<
+		{
+			applicationNo: string;
+			city: string;
+			receivedDate: string;
+			agentName: string;
+			applicantName: string;
+			coApplicantName: string;
+			phoneNumbers: string;
+			dob: string;
+			verificationType: string;
+			businessName: string;
+			posted: string;
+			bankName: string;
+			address: string;
+		}[]
+	> {
+		if (this._account.userLevel < UserLevel.Admin) {
+			throw new CustomError(ERRORS.PERMISSION_DENIED);
+		}
+		let managedTasks: ITaskManager[] = [];
+		if (!query.masterAccess) {
+			managedTasks = await TaskManagerDB.find({ assignedBy: this._account.userId });
+		}
+
+		const records = await TaskDB.find({
+			$and: [
+				{
+					...(query.date_range && {
+						dueDate: {
+							$gte: query.date_range.start,
+							$lte: query.date_range.end,
+						},
+					}),
+				},
+				{ ...(query.priority && { priority: query.priority }) },
+				{ ...(query.status && { status: query.status }) },
+				{ ...(!query.masterAccess && { _id: { $in: managedTasks.map((task) => task.taskId) } }) },
+			],
+		})
+			.populate<{
+				verificationFormId: IVerificationForm;
+				teleVerificationId: ITeleVerificationForm;
+				residenceVerificationId: IResidenceVerificationForm;
+				incomeVerificationId: IIncomeTaxVerificationForm;
+				bankVerificationId: IBankVerificationForm;
+				employmentVerificationId: IEmploymentVerificationForm;
+				businessVerificationId: IBusinessVerificationForm;
+			}>(
+				'verificationFormId teleVerificationId residenceVerificationId incomeVerificationId bankVerificationId employmentVerificationId businessVerificationId'
+			)
+			.sort({ dueDate: 1 });
+
+		return records.map((record) => {
+			if (record.verificationFormId === null) {
+				console.log(record._id);
+				return {} as any;
+			}
+
+			return {
+				uniqueId: record._id,
+				applicationNo: record.applicationNo || 'N/A',
+				city: record.verificationFormId?.city || 'N/A',
+				receivedDate: record.verificationFormId?.dateOfApplication
+					? DateUtils.getMoment(record.verificationFormId.dateOfApplication).format('DD/MM/YYYY')
+					: 'N/A',
+				applicantName: record.verificationFormId?.applicantName || 'N/A',
+				coApplicantName: record.verificationFormId?.coApplicantName || 'N/A',
+				phoneNumbers: record.verificationFormId?.telephone || 'N/A',
+				dob: record.verificationFormId?.applicantDOB
+					? DateUtils.getMoment(record.verificationFormId.applicantDOB).format('DD/MM/YYYY')
+					: 'N/A',
+				verificationType:
+					record.verificationType === 'business'
+						? 'Business'
+						: record.verificationType === 'non-business'
+						? 'Service'
+						: 'Pensioner',
+
+				businessName:
+					record.verificationType === 'nri'
+						? 'Pensioner'
+						: record.verificationType === 'business'
+						? `${record.businessVerificationId?.businessDetails?.companyName || 'N/A'} / ${
+								record.businessVerificationId?.businessDetails?.designation || 'N/A'
+						  }`
+						: `${record.employmentVerificationId?.employmentDetails?.organizationName || 'N/A'} / ${
+								record.employmentVerificationId?.designation || 'N/A'
+						  }`,
+
+				posted:
+					record.verificationType === 'nri'
+						? 'Pensioner'
+						: record.verificationType === 'business'
+						? record.businessVerificationId?.officeAddress || 'N/A'
+						: record.employmentVerificationId?.officeAddress || 'N/A',
+
+				bankName: record.bankVerificationId?.applicant?.bankName || 'N/A',
+				address: record.verificationFormId?.residence || 'N/A',
+				status: {
+					teleVerification: record.teleVerificationId
+						? record.teleVerificationId.verificationResult ?? 'N/A'
+						: undefined,
+					residenceVerification: record.residenceVerificationId
+						? record.residenceVerificationId.remarks ?? 'N/A'
+						: undefined,
+					incomeVerification: record.incomeVerificationId
+						? record.incomeVerificationId.remarks ?? 'N/A'
+						: undefined,
+					bankVerification: record.bankVerificationId
+						? record.bankVerificationId.remarks ?? 'N/A'
+						: undefined,
+					employmentVerification: record.employmentVerificationId
+						? record.employmentVerificationId.officeRemarks ?? 'N/A'
+						: undefined,
+					businessVerification: record.businessVerificationId
+						? record.businessVerificationId.recommended ?? 'N/A'
+						: undefined,
+				},
+			};
+		});
 	}
 
 	public async deleteAttachment(taskId: Types.ObjectId, attachment: string) {
@@ -442,26 +578,6 @@ export default class TaskService {
 			return {
 				...processDocs(record),
 				assignedTo: assignedTo,
-				status: {
-					teleVerification: record.teleVerificationId
-						? record.teleVerificationId.verificationResult ?? 'N/A'
-						: undefined,
-					residenceVerification: record.residenceVerificationId
-						? record.residenceVerificationId.remarks ?? 'N/A'
-						: undefined,
-					incomeVerification: record.incomeVerificationId
-						? record.incomeVerificationId.remarks ?? 'N/A'
-						: undefined,
-					bankVerification: record.bankVerificationId
-						? record.bankVerificationId.remarks ?? 'N/A'
-						: undefined,
-					employmentVerification: record.employmentVerificationId
-						? record.employmentVerificationId.officeRemarks ?? 'N/A'
-						: undefined,
-					businessVerification: record.businessVerificationId
-						? record.businessVerificationId.recommended ?? 'N/A'
-						: undefined,
-				},
 			};
 		});
 	}
@@ -519,26 +635,6 @@ export default class TaskService {
 			return {
 				...processDocs(record),
 				assignedBy: assignedBy,
-				status: {
-					teleVerification: record.teleVerificationId
-						? record.teleVerificationId.verificationResult ?? 'N/A'
-						: undefined,
-					residenceVerification: record.residenceVerificationId
-						? record.residenceVerificationId.remarks ?? 'N/A'
-						: undefined,
-					incomeVerification: record.incomeVerificationId
-						? record.incomeVerificationId.remarks ?? 'N/A'
-						: undefined,
-					bankVerification: record.bankVerificationId
-						? record.bankVerificationId.remarks ?? 'N/A'
-						: undefined,
-					employmentVerification: record.employmentVerificationId
-						? record.employmentVerificationId.officeRemarks ?? 'N/A'
-						: undefined,
-					businessVerification: record.businessVerificationId
-						? record.businessVerificationId.recommended ?? 'N/A'
-						: undefined,
-				},
 			};
 		});
 	}
@@ -555,6 +651,17 @@ function processDocs(doc: any): {
 	createdAt: string;
 	status: string;
 	isOverdue: boolean;
+	applicationNo: string;
+	applicantName: string;
+	kycCount: number;
+	kycStatus: {
+		teleVerification: string;
+		residenceVerification: string;
+		incomeVerification: string;
+		bankVerification: string;
+		employmentVerification: string;
+		businessVerification: string;
+	};
 } {
 	return {
 		id: doc._id as IDType,
@@ -566,9 +673,32 @@ function processDocs(doc: any): {
 		dueDate: DateUtils.getMoment(doc.dueDate).format('MMM Do, YYYY hh:mm A'),
 		relativeDate: DateUtils.getMoment(doc.dueDate).fromNow(),
 		status: doc.status,
+		applicationNo: doc.applicationNo,
+		applicantName: doc.applicantName,
 		isOverdue:
 			doc.status === 'completed'
 				? DateUtils.getMoment(doc.dueDate).isBefore(doc.completedAt)
 				: DateUtils.getMoment(doc.dueDate).isBefore(DateUtils.getMomentNow()),
+		kycCount: [doc.kyc1, doc.kyc2, doc.kyc3, doc.kyc4, doc.kyc5].filter((kyc) => !!kyc).length,
+		kycStatus: {
+			teleVerification: doc.teleVerificationId
+				? doc.teleVerificationId.verificationResult ?? 'N/A'
+				: undefined,
+			residenceVerification: doc.residenceVerificationId
+				? doc.residenceVerificationId.remarks ?? 'N/A'
+				: undefined,
+			incomeVerification: doc.incomeVerificationId
+				? doc.incomeVerificationId.remarks ?? 'N/A'
+				: undefined,
+			bankVerification: doc.bankVerificationId
+				? doc.bankVerificationId.remarks ?? 'N/A'
+				: undefined,
+			employmentVerification: doc.employmentVerificationId
+				? doc.employmentVerificationId.officeRemarks ?? 'N/A'
+				: undefined,
+			businessVerification: doc.businessVerificationId
+				? doc.businessVerificationId.recommended ?? 'N/A'
+				: undefined,
+		},
 	};
 }

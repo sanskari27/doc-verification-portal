@@ -12,6 +12,14 @@ export interface ITask extends Document {
 
 	verificationType: 'business' | 'non-business' | 'nri';
 	applicantName: string;
+	applicationNo: string;
+
+	kyc1: Types.ObjectId;
+	kyc2: Types.ObjectId;
+	kyc3: Types.ObjectId;
+	kyc4: Types.ObjectId;
+	kyc5: Types.ObjectId;
+
 	verificationFormId: Types.ObjectId;
 	teleVerificationId: Types.ObjectId;
 	residenceVerificationId: Types.ObjectId;

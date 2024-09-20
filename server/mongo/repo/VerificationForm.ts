@@ -30,6 +30,10 @@ const VerificationFormSchema = new mongoose.Schema<IVerificationForm>({
 		required: true,
 		unique: true,
 	},
+	applicationNo: {
+		type: String,
+		default: '',
+	},
 	applicantName: {
 		type: String,
 		required: true,
@@ -54,6 +58,13 @@ const VerificationFormSchema = new mongoose.Schema<IVerificationForm>({
 	signedPlace: {
 		type: String,
 		default: '',
+	},
+	city: {
+		type: String,
+		default: '',
+	},
+	applicantDOB: {
+		type: Date,
 	},
 });
 

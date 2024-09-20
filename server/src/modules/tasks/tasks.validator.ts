@@ -45,6 +45,11 @@ export type AssignValidationResult = {
 	agentId: Types.ObjectId;
 };
 
+export type AssignKYCValidationResult = {
+	agentId: Types.ObjectId;
+	reKyc: boolean;
+};
+
 export type TaskStatusValidationResult = {
 	status: TaskStatus;
 };
@@ -198,6 +203,29 @@ export function FetchQueryValidator(req: Request, res: Response, next: NextFunct
 export function AssignValidator(req: Request, res: Response, next: NextFunction) {
 	const reqValidator = z.object({
 		agentId: idSchema,
+	});
+
+	const reqValidatorResult = reqValidator.safeParse(req.body);
+
+	if (reqValidatorResult.success) {
+		req.locals.data = reqValidatorResult.data;
+		return next();
+	}
+
+	return next(
+		new CustomError({
+			STATUS: 400,
+			TITLE: 'INVALID_FIELDS',
+			MESSAGE: "Invalid fields in the request's body.",
+			OBJECT: reqValidatorResult.error.flatten(),
+		})
+	);
+}
+
+export function AssignKYCValidator(req: Request, res: Response, next: NextFunction) {
+	const reqValidator = z.object({
+		agentId: idSchema,
+		reKyc: z.boolean().optional(),
 	});
 
 	const reqValidatorResult = reqValidator.safeParse(req.body);
