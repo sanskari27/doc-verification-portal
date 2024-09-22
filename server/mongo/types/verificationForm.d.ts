@@ -10,6 +10,8 @@ export interface IVerificationForm extends Document {
 	telephone: string;
 	signedDate: Date;
 	signedPlace: string;
+	city: string;
+	applicantDOB: Date;
 }
 
 export interface ContactedPerson {

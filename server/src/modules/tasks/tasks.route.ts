@@ -3,6 +3,7 @@ import { UserLevel } from '../../config/const';
 import { IDValidator, VerifyMinLevel } from '../../middleware';
 import Controller from './tasks.controller';
 import {
+	AssignKYCValidator,
 	AssignValidator,
 	CreateTaskValidator,
 	NameValidator,
@@ -21,7 +22,7 @@ router
 	.post(IDValidator, Controller.uploadAttachment)
 	.delete(IDValidator, NameValidator, Controller.deleteAttachment);
 
-router.route('/:id/assign').post(IDValidator, AssignValidator, Controller.assignTask);
+router.route('/:id/assign').post(IDValidator, AssignKYCValidator, Controller.assignTask);
 router.route('/:id/transfer').post(IDValidator, AssignValidator, Controller.transferTask);
 
 router.route('/:id/status').post(IDValidator, TaskStatusValidator, Controller.updateTaskStatus);

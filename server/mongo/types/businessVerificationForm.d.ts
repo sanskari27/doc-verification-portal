@@ -3,6 +3,11 @@ import { ContactedPerson } from './verificationForm';
 
 export interface IBusinessVerificationForm extends Document {
 	task_id: Types.ObjectId;
+	officeAddress: string;
+	addressConfirmed: boolean;
+	designation: string;
+	dateOfVisit: Date;
+
 	businessDetails: BusinessDetails;
 	companyType: 'Proprietorship' | 'Partnership' | 'Private Limited' | 'Public Limited' | 'Others';
 	productDetails: string;

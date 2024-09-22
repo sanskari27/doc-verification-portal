@@ -46,13 +46,39 @@ const TaskSchema = new mongoose.Schema<ITask>(
 			enum: ['business', 'non-business', 'nri'],
 			required: true,
 		},
+		applicationNo: {
+			type: String,
+			required: true,
+		},
 		applicantName: {
 			type: String,
 			required: true,
 		},
+
+		kyc1: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Account',
+		},
+		kyc2: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Account',
+		},
+		kyc3: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Account',
+		},
+		kyc4: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Account',
+		},
+		kyc5: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Account',
+		},
+
 		verificationFormId: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: 'BankVerificationForm',
+			ref: 'VerificationForm',
 		},
 		teleVerificationId: {
 			type: mongoose.Schema.Types.ObjectId,

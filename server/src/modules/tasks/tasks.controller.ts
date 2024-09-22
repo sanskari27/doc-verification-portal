@@ -7,6 +7,7 @@ import AgentService from '../../services/user/agent';
 import { Respond } from '../../utils/ExpressUtils';
 import FileUtils from '../../utils/FileUtils';
 import {
+	AssignKYCValidationResult,
 	AssignValidationResult,
 	CreateTaskValidationResult,
 	FetchQueryType,
@@ -244,11 +245,13 @@ async function updateFormData(req: Request, res: Response, next: NextFunction) {
 
 async function assignTask(req: Request, res: Response, next: NextFunction) {
 	const taskId = req.locals.id;
-	const { agentId } = req.locals.data as AssignValidationResult;
+	const { agentId, reKyc } = req.locals.data as AssignKYCValidationResult;
 	const taskService = new TaskService(req.locals.user);
 
 	try {
-		await taskService.assignTask(taskId, agentId);
+		await taskService.assignTask(taskId, agentId, {
+			reKyc,
+		});
 
 		Respond({
 			res,

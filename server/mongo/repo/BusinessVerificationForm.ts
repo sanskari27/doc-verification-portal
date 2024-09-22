@@ -32,6 +32,21 @@ const BusinessVerificationFormSchema = new mongoose.Schema<IBusinessVerification
 		required: true,
 		unique: true,
 	},
+	officeAddress: {
+		type: String,
+		default: '',
+	},
+	addressConfirmed: {
+		type: Boolean,
+		default: false,
+	},
+	designation: {
+		type: String,
+		default: '',
+	},
+	dateOfVisit: {
+		type: Date,
+	},
 	businessDetails: BusinessDetailsSchema,
 	companyType: {
 		type: String,
