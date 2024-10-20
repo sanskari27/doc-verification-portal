@@ -2,7 +2,6 @@ import { Types } from 'mongoose';
 import { AccountDB, IAccount } from '../../../mongo';
 import { TaskStatus, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
-import { generateText } from '../../utils/ExpressUtils';
 import AccountService from '../auth/account';
 import TaskService from '../task/task';
 import AgentService from './agent';
@@ -21,7 +20,7 @@ export default class AdminService extends AccountService {
 		phone: string;
 		parent: Types.ObjectId;
 	}) {
-		const id = await AccountService.register(details.email, generateText(4), {
+		const id = await AccountService.register(details.email, {
 			...details,
 			level: UserLevel.Admin,
 		});

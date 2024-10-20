@@ -7,7 +7,6 @@ export default interface IAccount extends Document {
 	name: string;
 	phone: string;
 	email: string;
-	password: string;
 	userLevel: UserLevel;
 	disabled: boolean;
 

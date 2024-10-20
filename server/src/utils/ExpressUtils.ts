@@ -87,6 +87,11 @@ export function generateText(bytes: number = 4) {
 	return crypto.randomBytes(bytes).toString('hex');
 }
 
+export function generateRandomNumber(length: number = 6) {
+	//generate cryptographically secure random number of fixed length
+	return crypto.randomInt(Math.pow(10, length - 1), Math.pow(10, length));
+}
+
 export function generateInvoiceID(id: string) {
 	// 23-24/Saas/000001
 	const moment_now = DateUtils.getMomentNow();

@@ -2,7 +2,6 @@ import { Types } from 'mongoose';
 import { AccountDB, IAccount, TaskDB, TaskManagerDB } from '../../../mongo';
 import { TaskStatus, UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
-import { generateText } from '../../utils/ExpressUtils';
 import AccountService from '../auth/account';
 import TaskService from '../task/task';
 
@@ -21,7 +20,7 @@ export default class AgentService extends AccountService {
 		parent: Types.ObjectId;
 		type: 'agent' | 'dummy-agent';
 	}) {
-		const id = await AccountService.register(details.email, generateText(4), {
+		const id = await AccountService.register(details.email, {
 			...details,
 			level: details.type === 'agent' ? UserLevel.Agent : UserLevel.DummyAgent,
 		});

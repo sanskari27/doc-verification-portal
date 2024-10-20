@@ -13,6 +13,7 @@ export interface ITask extends Document {
 	verificationType: 'business' | 'non-business' | 'nri';
 	applicantName: string;
 	applicationNo: string;
+	city: string;
 
 	kyc1: Types.ObjectId;
 	kyc2: Types.ObjectId;
