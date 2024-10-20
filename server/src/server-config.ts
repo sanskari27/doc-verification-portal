@@ -9,7 +9,7 @@ import Logger from 'n23-logger';
 import { IS_PRODUCTION, IS_WINDOWS, Path } from './config/const';
 import { CustomError } from './errors';
 
-const allowlist = ['http://localhost:3001'];
+const allowlist = ['http://localhost:5173'];
 
 const corsOptionsDelegate = (req: any, callback: any) => {
 	let corsOptions;

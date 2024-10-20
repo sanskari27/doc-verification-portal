@@ -8,7 +8,10 @@ const getMonth = () => {
 	return moment().format('MM');
 };
 
-const getMonthName = () => {
+const getMonthName = (month?: number) => {
+	if (month) {
+		return moment().month(month).format('MMM');
+	}
 	return moment().format('MMM');
 };
 

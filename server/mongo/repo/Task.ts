@@ -54,6 +54,10 @@ const TaskSchema = new mongoose.Schema<ITask>(
 			type: String,
 			required: true,
 		},
+		city: {
+			type: String,
+			required: true,
+		},
 
 		kyc1: {
 			type: mongoose.Schema.Types.ObjectId,

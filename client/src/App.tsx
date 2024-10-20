@@ -1,7 +1,13 @@
-import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Suspense } from 'react';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
-import { Flex, Image } from '@chakra-ui/react';
+import { Flex } from '@chakra-ui/react';
+import Loading from './components/loading';
+import PrivateRoute from './components/privateRoute';
+import { RoutePath } from './config/const';
+import Login from './pages/auth/login';
+import Dashboard from './pages/dashboard';
+import Home from './pages/home';
 
 // const Welcome = lazy(() => import('./views/pages/welcome'));
 // const Scheduler = lazy(() => import('./views/pages/scheduler'));
@@ -20,10 +26,27 @@ import { Flex, Image } from '@chakra-ui/react';
 function App() {
 	return (
 		<Flex minHeight={'100vh'} width={'100vw'} className='bg-background'>
-			<Loading />
 			<Router>
 				<Suspense fallback={<Loading />}>
 					<Routes>
+						<Route element={<PrivateRoute />}>
+							<Route path='/' element={<Home />}>
+								<Route path={RoutePath.Dashboard} element={<Dashboard />} />
+								<Route path={RoutePath.Table} element={<>Table</>} />
+								<Route path={RoutePath.Team} element={<>Team</>} />
+								<Route path={RoutePath.Utility} element={<>Utitlity</>} />
+								<Route path={RoutePath.Profile} element={<>Profile</>} />
+							</Route>
+						</Route>
+						<Route
+							path={RoutePath.Login}
+							element={
+								<PrivateRoute reverse>
+									<Login />
+								</PrivateRoute>
+							}
+						/>
+
 						{/* <Route path={NAVIGATION.WELCOME} element={<Welcome />} />
             <Route path={NAVIGATION.OPEN + '/:id'} element={<Open />} />
             <Route path={NAVIGATION.HOME} element={<Home />}>
@@ -46,40 +69,5 @@ function App() {
 		</Flex>
 	);
 }
-
-const Loading = () => {
-	const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-		e.preventDefault();
-		e.stopPropagation();
-	};
-	return (
-		<Flex
-			direction={'column'}
-			justifyContent={'center'}
-			alignItems={'center'}
-			flexDirection='column'
-			width={'100vw'}
-			height={'100vh'}
-			className='bg-black/60'
-			onClick={handleClick}
-			zIndex={99999}
-		>
-			<Flex
-				direction={'column'}
-				justifyContent={'center'}
-				alignItems={'center'}
-				rounded={'lg'}
-				width={'400px'}
-				height={'300px'}
-				className='border shadow-xl drop-shadow-xl '
-				bgColor={'white'}
-			>
-				<Flex justifyContent={'center'} alignItems={'center'} width={'full'} gap={'1rem'}>
-					<Image src={'/logo.svg'} width={'200px'} className='animate-pulse' />
-				</Flex>
-			</Flex>
-		</Flex>
-	);
-};
 
 export default App;

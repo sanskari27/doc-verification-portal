@@ -512,6 +512,32 @@ export default class TaskService {
 		});
 	}
 
+	public async previousRecordsSummary(
+		query: Partial<{ limit: number; masterAccess: boolean }> = {}
+	) {
+		let managedTasks: ITaskManager[] = [];
+		if (!query.masterAccess) {
+			managedTasks = await TaskManagerDB.find({ assignedBy: this._account.userId });
+		}
+
+		const records = await TaskDB.find({
+			$and: [
+				{ ...(!query.masterAccess && { _id: { $in: managedTasks.map((task) => task.taskId) } }) },
+			],
+		})
+			.sort({ dueDate: -1 })
+			.limit(query.limit || 5);
+
+		return records.map((record) => {
+			return {
+				name: record.applicantName,
+				status: record.status.toLowerCase(),
+				dueDate: DateUtils.getMoment(record.dueDate).format('DD MMM YYYY'),
+				verificationType: record.verificationType,
+			};
+		});
+	}
+
 	public async deleteAttachment(taskId: Types.ObjectId, attachment: string) {
 		await TaskDB.updateOne(
 			{

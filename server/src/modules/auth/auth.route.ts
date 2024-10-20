@@ -1,13 +1,11 @@
 import express from 'express';
-import { UserLevel } from '../../config/const';
-import { IDValidator, VerifyMinLevel, VerifySession } from '../../middleware';
+import { VerifySession } from '../../middleware';
 import Controller from './auth.controller';
 import {
 	LoginAccountValidator,
+	OTPValidator,
 	RegisterAccountValidator,
-	ResetPasswordValidator,
 	UpdateAccountValidator,
-	UpdatePasswordValidator,
 } from './auth.validator';
 
 const router = express.Router();
@@ -20,16 +18,12 @@ router
 	.get(Controller.details)
 	.post(UpdateAccountValidator, Controller.updateDetails);
 
-router
-	.route('/service-account/:id')
-	.all(VerifySession, VerifyMinLevel(UserLevel.Master), IDValidator)
-	.post(Controller.serviceAccount);
+router.route('/request-login').all(LoginAccountValidator).post(Controller.getLoginOtp);
 
-router.route('/login').all(LoginAccountValidator).post(Controller.login);
+router.route('/login').all(OTPValidator).post(Controller.login);
 
 router.route('/register').all(RegisterAccountValidator).post(Controller.register);
-router.route('/forgot-password').all(ResetPasswordValidator).post(Controller.forgotPassword);
-router.route('/reset-password/:id').all(UpdatePasswordValidator).post(Controller.resetPassword);
+
 router.route('/logout').post(Controller.logout);
 
 export default router;

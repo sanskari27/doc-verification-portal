@@ -1,12 +1,9 @@
-import { randomBytes } from 'crypto';
 import { Types } from 'mongoose';
-import { AccountDB, SessionDB, StorageDB, IAccount } from '../../../mongo';
+import { AccountDB, IAccount, SessionDB, StorageDB } from '../../../mongo';
 import { UserLevel } from '../../config/const';
 import { AUTH_ERRORS, CustomError } from '../../errors';
-import { sendLoginCredentialsEmail } from '../../provider/email';
 import { IDType } from '../../types';
-import DateUtils from '../../utils/DateUtils';
-import { filterUndefinedKeys } from '../../utils/ExpressUtils';
+import { filterUndefinedKeys, generateRandomNumber, generateText } from '../../utils/ExpressUtils';
 import SessionService from './session';
 
 type SessionDetails = {
@@ -37,14 +34,35 @@ export default class AccountService {
 		return new AccountService(account);
 	}
 
-	static async login(email: string, password: string, opts: SessionDetails) {
-		const user = await AccountDB.findOne({ email, disabled: false }).select('+password');
+	static async generateLoginToken(email: string) {
+		const user = await AccountDB.findOne({ email });
 		if (user === null) {
 			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
 		}
 
-		const password_matched = await user.verifyPassword(password);
-		if (!password_matched) {
+		const otp = generateRandomNumber(6);
+		const token = generateText(32);
+		await StorageDB.setObject(token, { id: user._id, otp: otp });
+
+		return {
+			token,
+			otp,
+		};
+	}
+
+	static async login(token: string, otp: string, opts: SessionDetails) {
+		const storage = await StorageDB.getObject(token);
+		if (!storage) {
+			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
+		}
+
+		const { id, otp: savedOTP } = storage;
+		if (otp.toString() !== savedOTP.toString()) {
+			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
+		}
+
+		const user = await AccountDB.findOne({ _id: id, disabled: false });
+		if (user === null) {
 			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
 		}
 
@@ -111,7 +129,6 @@ export default class AccountService {
 
 	static async register(
 		email: string,
-		password: string,
 		opts: {
 			name?: string;
 			phone?: string;
@@ -122,63 +139,23 @@ export default class AccountService {
 		try {
 			const user = await AccountDB.create({
 				email,
-				password,
 				name: opts.name,
 				phone: opts.phone,
 				userLevel: opts.level,
 				parent: opts.parent,
 			});
 
-			sendLoginCredentialsEmail(email, email, password);
 			return user._id;
 		} catch (err) {
 			const user = await AccountDB.findOne({ email });
 			if (user?.disabled) {
 				user.disabled = false;
-				user.password = password;
 				await user.save();
-				sendLoginCredentialsEmail(email, email, password);
 				return user._id;
 			}
 
 			throw new CustomError(AUTH_ERRORS.USER_ALREADY_EXISTS);
 		}
-	}
-
-	static async generatePasswordResetLink(email: string) {
-		const user = await AccountDB.findOne({ email }).select('+password');
-		if (user === null) {
-			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
-		}
-
-		const token = randomBytes(16).toString('hex');
-
-		await StorageDB.setString(
-			token,
-			user._id.toString(),
-			DateUtils.getMomentNow().add(20, 'minutes').toDate()
-		);
-		return token;
-	}
-
-	static async saveResetPassword(token: string, password: string) {
-		const id = await StorageDB.getString(token);
-
-		if (!id) {
-			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
-		}
-
-		const user = await AccountDB.findOne({ _id: id }).select('+password');
-		if (user === null) {
-			throw new CustomError(AUTH_ERRORS.USER_NOT_FOUND_ERROR);
-		}
-
-		user.password = password;
-		await user.save();
-
-		await StorageDB.deleteOne({
-			key: token,
-		});
 	}
 
 	static async markLogout(token: string) {

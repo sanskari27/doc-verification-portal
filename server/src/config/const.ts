@@ -21,7 +21,6 @@ export const LOGO_PATH = '/static/assets/logo-primary.svg';
 export enum Cookie {
 	Auth = 'auth-cookie',
 	Refresh = 'refresh-cookie',
-	Device = 'device-cookie',
 }
 export enum UserLevel {
 	DummyAgent = 10,
